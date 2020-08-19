@@ -20,3 +20,5 @@ Copy the following code into the R consola nd press enter: <br>
 Open the package library for HICbioclean.
 Copy the following code into the R consola nd press enter: <br>
 ***library(HICbioclean)***
+
+See MANUAL-TOTORIAL-HICbioclean-Rpackage.pdf for instructions on its use.
