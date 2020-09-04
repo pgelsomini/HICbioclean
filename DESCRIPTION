@@ -1,0 +1,22 @@
+Package: HICbioclean
+Type: Package
+Title: Auto and Manual Validation and Calibration of Continuous Biological Parameters from the Flemish Hydrological Information Center (HIC) Database 
+Version: 0.1.0
+Author: Written and developed by Pali Felice Gelsomini with support from Tom Maris of the Ecosystem Management Research Group (ECOBE) University of Antwerp. Funded by De Vlaamse Waterweg (Flemish Waterways) for the Hydrological Information Center (HIC) of Flanders Hydraulics Research
+Maintainer: Pali Felice Gelsomini <palifelice.gelsomini@uantwerpen.be>
+Description: An R package specifically designed for automating the process of cleaning, calibrating and validating continuous biological water quality data from the Flemish HIC (Hydrological Information Centre) database.
+    It provides both R functions for integration into R scripts and easy to use R Shiny graphical interfaces for intuitive data cleaning, validation and calibration without the need for coding.
+License: GPL
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    shiny,
+    colourpicker,
+    readxl
+RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
