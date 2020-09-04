@@ -6,7 +6,7 @@ An R package specifically designed for automating the process of cleaning, calib
 
 It provides both R functions for integration into R scripts and easy to use R Shiny graphical apps for intuitive data cleaning, validation and calibration without the need for coding.
 
-Note: In this version of the package, the only dummy codes are provided for import into the HIC database system.
+Note: In this version of the package, only dummy codes are provided for import into the HIC database system.
 
 ## Installation
 
