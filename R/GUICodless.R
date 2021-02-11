@@ -145,7 +145,7 @@ HIC.App.manual <- function(){
                                                                                             fluidRow(column(2,numericInput("min1",NULL,80)),column(2,numericInput("max1",NULL,80)),column(2,numericInput("for1",NULL,NULL)),column(2,"auto good"),column(2,textInput("state1",NULL,"auto good")),column(2,colourInput("col1",NULL,value = "#696969"))),
                                                                                             fluidRow(column(2,numericInput("min2",NULL,91)),column(2,numericInput("max2",NULL,91)),column(2,numericInput("for2",NULL,NULL)),column(2,"min max filter deleted"),column(2,textInput("state2",NULL,"min max filter deleted")),column(2,colourInput("col2",NULL,value = "#e9967a"))),
                                                                                             fluidRow(column(2,numericInput("min3",NULL,92)),column(2,numericInput("max3",NULL,92)),column(2,numericInput("for3",NULL,NULL)),column(2,"spike filter deleted"),column(2,textInput("state3",NULL,"spike filter deleted")),column(2,colourInput("col3",NULL,value = "#ee1289"))),
-                                                                                            fluidRow(column(2,numericInput("min4",NULL,93)),column(2,numericInput("max4",NULL,93)),column(2,numericInput("for4",NULL,NULL)),column(2,"manual interpolated"),column(2,textInput("state4",NULL,"auto interpolated")),column(2,colourInput("col4",NULL,value = "#66cd00"))),
+                                                                                            fluidRow(column(2,numericInput("min4",NULL,93)),column(2,numericInput("max4",NULL,93)),column(2,numericInput("for4",NULL,NULL)),column(2,"manual interpolated"),column(2,textInput("state4",NULL,"manual interpolated")),column(2,colourInput("col4",NULL,value = "#66cd00"))),
                                                                                             fluidRow(column(2,numericInput("min5",NULL,99)),column(2,numericInput("max5",NULL,99)),column(2,numericInput("for5",NULL,99)),column(2,"manual delete"),column(2,textInput("state5",NULL,"manual delete")),column(2,colourInput("col5",NULL,value = "#009acd"))),
                                                                                             fluidRow("PPFD despiking specific codes"),
                                                                                             fluidRow(column(2,numericInput("min30",NULL,94)),column(2,numericInput("max30",NULL,94)),column(2,numericInput("for30",NULL,NULL)),column(4,textInput("state30",NULL,"deleted, deleted in other sensor")),column(2,colourInput("col30",NULL,value = "#66CD00"))),
@@ -529,13 +529,28 @@ HIC.App.manual <- function(){
       #Exporting augmented data table
       observeEvent(input$export_con_toggle,{
         withProgress(message = "Process running: exporting augmented continuous data table", value = 0,{ #code for showing a progress bar and message in shiny app when this function is run
+          systime <- Sys.time()
+          finaldata <- exportzrxfile(systime=systime) #format final data for export and make zrx file for use at the HIC
+
           #preparing table
           datatable <- df()
 
-          datatable[[input$statecol]] <- vals$state
-          incProgress(1/3) #incrument counter for the progress bar
-          datatable[[input$valcol]] <- vals$valCont
-          incProgress(1/3) #incrument counter for the progress bar
+          if(!input$PPFDdata){
+            datatable[[input$statecol]] <- finaldata$sov #vals$state
+            incProgress(1/3) #increment counter for the progress bar
+            datatable[[input$valcol]] <- finaldata$values #vals$valCont
+            incProgress(1/3) #increment counter for the progress bar
+          }
+          if(input$PPFDdata){
+            datatable[[input$statecol]] <- finaldata$sovkd #vals$state
+            incProgress(1/3) #increment counter for the progress bar
+            datatable[[input$valcol]] <- finaldata$values #vals$valCont
+            incProgress(1/3) #increment counter for the progress bar
+            datatable[["dspk.Values.y"]] <- finaldata$valuesL
+            datatable[["dspk.Values.x"]] <- finaldata$valuesU
+            datatable[["dspk.StateOfValue.y"]] <- finaldata$sovL
+            datatable[["dspk.StateOfValue.x"]] <- finaldata$sovU
+          }
 
           if (input$subDirectory_con != "") {#add a / to the end of the sub directory if present
             tryCatch({
@@ -551,11 +566,9 @@ HIC.App.manual <- function(){
             )
 
           }else{subdir <- input$subDirectory_con}
-          systime <- Sys.time()
           write.csv(datatable,file = paste0(subdir,input$Note_con,input$Contfile$name,"_",format(systime, "%Y%m%d_%H%M%S"),".csv"),row.names = F)
           isolate(work$log <- rbind(work$log,paste("continuous data exported to",paste0(subdir,input$Note_con,input$Contfile$name,"_",format(Sys.time(), "%Y%m%d_%H%M%S"),".csv"),"at",Sys.time()))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reavtive function reevaluate for ever
           try(exportcorelationtable(systime),silent = T)
-          exportzrxfile()
           exportworklog(systime)
           if(input$deleteworklog)work$log <- NULL
         })
@@ -574,7 +587,7 @@ HIC.App.manual <- function(){
         sov <- vals$state #get state of values
         stationno <- vals$StNoCont #get station number
         parameter <- vals$parCont #get parameter
-        unit <- vals$parUnitCont #get unite
+
 
         times <- format(as.POSIXct(times, origin = "1970-01-01", tz=  "Etc/GMT-1"), "%Y%m%d%H%M") #convert the UNIX time to datetime format in timezone UTC+1
 
@@ -706,12 +719,17 @@ HIC.App.manual <- function(){
         }
 
         #data rows
-        if(!input$PPFDdata)datarows <- t(t(paste0(times,'\t',values,'\t',sov))) #paste the data together tab separated, then make a table then pivot the table
+        if(!input$PPFDdata){
+          datarows <- t(t(paste0(times,'\t',values,'\t',sov))) #paste the data together tab separated, then make a table then pivot the table
+          finaldata <- data.frame(values,sov)
+        }
         if(input$PPFDdata){
           datarowskd <- t(t(paste0(times,'\t',values,'\t',sovkd)))
           datarowsU <- t(t(paste0(times,'\t',valuesU,'\t',sovU)))
           datarowsL <- t(t(paste0(times,'\t',valuesL,'\t',sovL)))
+          finaldata <- data.frame(values,sovkd,valuesU,sovU,valuesL,sovL)
         }
+
 
         #make Header
         #get name parameter code
@@ -721,12 +739,14 @@ HIC.App.manual <- function(){
           if(is.na(concode)){
             showNotification('The combination of site number and parameter name was not found in zrxFileStationCodes. The current site number and parameter will be used as the code.', duration = 10)
             code <- paste0(stationno,"-",parameter)
+            unit <- vals$parUnitCont #get unite
           }else{
             code <- zrxcodes[,3][concode]
+            unit <- zrxcodes[,4][concode]
           }
 
-          header <- paste0('#REXCHANGE1013',code,'VAL|*|RINVAL-777.0|*|')
-          header <- rbind(header,paste0('#TZUTC+1|*| CUNIT',unit,'|*|'))
+          header <- paste0('#REXCHANGE',code,'|*|RINVAL-777|*|')
+          header <- rbind(header,paste0('#TZUTC+1|*|CUNIT',unit,'|*|'))
           header <- rbind(header,'#LAYOUT(timestamp,value,primary_status)|*|')
           return(header)
         }
@@ -753,6 +773,7 @@ HIC.App.manual <- function(){
           writezrxhicfile(parameter=input$PPFDUname,header=headerU,datarows=datarowsU)
           writezrxhicfile(parameter=input$PPFDLname,header=headerL,datarows=datarowsL)
         }
+        return(finaldata)
 
       }
 
@@ -1734,7 +1755,7 @@ HIC.App.manual <- function(){
 
       #reclassify all work classes to Good state of value
       observeEvent(input$wtg.reclass_toggle,{
-        con <- !is.na(vals$valCont)&(!(vals$state %in% c(input$min21,as.numeric(input$min21)+1,as.numeric(input$min21)+2,as.numeric(input$min21)+3,as.numeric(input$min21)+4,as.numeric(input$min21)+5,as.numeric(input$min21)+6,as.numeric(input$min21)+7,as.numeric(input$min21)+8,input$for9,input$for10,input$for11,input$for12,input$for13,input$for14,input$for16,input$for30,input$for31,input$for32,input$for33,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49))|is.na(vals$state))
+        con <- !is.na(vals$valCont)&(!(vals$state %in% c(input$min21,as.numeric(input$min21)+1,as.numeric(input$min21)+2,as.numeric(input$min21)+3,as.numeric(input$min21)+4,as.numeric(input$min21)+5,as.numeric(input$min21)+6,as.numeric(input$min21)+7,as.numeric(input$min21)+8,input$min4,input$for9,input$for10,input$for11,input$for12,input$for13,input$for14,input$for30,input$for31,input$for32,input$for33,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49))|is.na(vals$state))
         vals$state[con] <- input$for9
         infotag  <-  paste("at",Sys.time())
         output$info <- renderText(paste("reclassify all work classes to Good state of value code",input$for9,infotag))

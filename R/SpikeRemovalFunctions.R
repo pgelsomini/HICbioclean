@@ -7,9 +7,11 @@
 
 #' Mode
 #'
+#'
 #' @param v A vector. May be a string, numeric, ect.
 #'
 #' @return The mode of the input vector
+#' @export
 dspk.getmode <- function(v) {
   uniqv <- unique(v)
   uniqv[which.max(tabulate(match(v, uniqv)))]
@@ -19,11 +21,13 @@ dspk.getmode <- function(v) {
 
 #' Vectorize utility function
 #'
+#' This function is not exported
+#'
 #' Vector data can be processed much faster than data in a dataframe.
 #' Can take a vector directly, a data frame and a column name or a data frame and a column number.
 #'
-#' @param Value
-#' @param Data
+#' @param Value Either the vector itself, the column name as a string in quotes or the column number as numeric
+#' @param Data An R object dataframe. Optional.
 #' @param na.strings allows you to handle NA values. ex: na.strings = c(-777, NA) all values of -777 will be replaced with values of NA
 #' @param sup.warn if TRUE it will prevent warning messages
 #'
@@ -79,6 +83,8 @@ dspk.vectorize <- function(Value, Data = NULL, na.strings = NULL, sup.warn = FAL
 
 #' Pre-format data tables for use with other HICbioclean functions
 #'
+#' This function is not exported
+#'
 #' Puts data values and datetime in a unique column and creates a state of value column. If the state of value column "dspk.StateOfValue" already
 #' exists then those values will be kept as the state of values. if datetime is numeric then those values will be kept. If date time is
 #' a character format, then it will be converted into UNIX seconds. If datetime is missing then the records will be numbered cosecutivly.
@@ -96,7 +102,6 @@ dspk.vectorize <- function(Value, Data = NULL, na.strings = NULL, sup.warn = FAL
 #' @return data table with values in "dspk.Values", numeric datetime in "dspk.DateTimeNum", and state of value in "dspk.StateOfValue".
 #' if add.original.data is TRUE then all the data in the input data table will be included.
 #'
-#' @examples
 dspk.TableFormatting <- function(Data = NULL, Value, DateTime = NULL, NAvalue = NULL, datetime.format = NULL, datetime.timezone = "GMT", state.of.value.code = 110,state.of.value.code.na = 255, add.original.data = T){
 
   #vectorize Value
@@ -179,19 +184,35 @@ dspk.TableFormatting <- function(Data = NULL, Value, DateTime = NULL, NAvalue = 
 
 #' Min max filter
 #'
-#' @param Data
-#' @param Value
-#' @param Min
-#' @param Max
-#' @param State.of.value.data
-#' @param state.of.value.code
-#' @param NAvalue
-#' @param logoutput
+#' Mininum maximum filter.
 #'
-#' @return returns $data which is a datatable with columns dspk.Values and dspk.StateOfValue containing the filtered data.
-#' If logoutput is TRUE, $logdata contains the info for the log file
+#' @param Data A datatable or NULL
+#' @param Value A vector, datatable column name as a string or datatable column number as numeric
+#' @param Min Minimum value to keep
+#' @param Max Maximum value to keep
+#' @param State.of.value.data A vector, datatable column name as a string or datatable column number as numeric
+#' @param state.of.value.code number that deleted values will be taged with
+#' @param default.state.of.value.code number that values will be tagged with if no State.of.value.data is given
+#' @param NAvalue Value that should be read as NA
+#' @param logoutput TRUE if you want to have a logged record of what the function did
 #'
-dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data = NULL, state.of.value.code = 91, NAvalue = NULL, logoutput = F){
+#' @return returns a datatable with columns dspk.Values and dspk.StateOfValue containing the filtered data.
+#' If logoutput is TRUE, then $data contains the datatable and $logdata contains the info for the log file
+#'
+#' @export
+#'
+#' @examples
+#' SomeValues <- c(5,NA,NA,NA,5,3,2,2,3,NA,8,2,3,3)
+#' SomeTimes <- c(1,2,3,4,5,6,7,8,9,22,23,24,25,26)
+#' ADataframe <- data.frame(SomeValues,SomeTimes)
+#'
+#' #entering in a vector into the function.
+#' dspk.MinMaxfilter(Value = SomeValues, Min = 3,Max = 5)
+#' #entering a dataframe and column name into the function
+#' dspk.MinMaxfilter(Data = ADataframe, Value = "SomeValues", Min = 3,Max = 5)
+#' #entering a dataframe and column number into the function
+#' dspk.MinMaxfilter(Data = ADataframe, Value = 1, Min = 3,Max = 5)
+dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data = NULL, state.of.value.code = 91, default.state.of.value.code = 110, NAvalue = NULL, logoutput = F){
   #you must enter a "min = " and a "max = " value
   if(!(is.numeric(state.of.value.code)&length(state.of.value.code)==1)) stop('State of value codes must be a number')
 
@@ -199,7 +220,7 @@ dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data 
   dspk.Values <- dspk.vectorize(Data = Data, Value = Value, na.strings = c(NAvalue,NA),sup.warn = T)
   #vectorize State of Value
   if(is.null(State.of.value.data)){
-    dspk.StateOfValue <- rep(110,length(dspk.Values)) #if no state of value is provided make one labled 110 (not evaluated)
+    dspk.StateOfValue <- rep(default.state.of.value.code,length(dspk.Values)) #if no state of value is provided make one labled 110 (not evaluated)
   }else{dspk.StateOfValue <- dspk.vectorize(Data = Data, Value = State.of.value.data, na.strings = c(NAvalue,NA),sup.warn = T)}
   #quality controle
   if (length(dspk.Values)!=length(dspk.StateOfValue)) stop('Values vector and State of Value vector need to be the same length')
@@ -236,22 +257,72 @@ dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data 
 
 #' Spike removal algorithm
 #'
-#' @param Data
-#' @param Value
-#' @param NumDateTime
-#' @param sampling.interval
-#' @param State.of.value.data
-#' @param state.of.value.code
-#' @param good.state.of.value.code
-#' @param NAvalue
-#' @param threshhold
-#' @param Method
-#' @param logoutput
+#' Outlier removal function using standard deviation or median absolute deviation thresholds
+#' from the 10 surrounding datapoints.
 #'
-#' @return returns $data which is a datatable with columns dspk.Values and dspk.StateOfValue containing the filtered data.
-#' If logoutput is TRUE, $logdata contains the info for the log file
+#' With the default “Method” median
+#' and the default “threshold” 3: all data points that are more than 3
+#' median absolute deviations away from the median of the 10 surrounding data
+#' points (5 before and 5 after) will be deleted. At least 5 surrounding data points
+#' is required for the sample to be evaluated. The algorithm will not look farther
+#' than 5 sampling intervals before and after the data point, for handling data gaps.
+#' If a “sampling.interval” is not provided then it will be calculated as the mode of
+#' the interval between samples.
 #'
-dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.interval = NULL, State.of.value.data = NULL, state.of.value.code = 92, good.state.of.value.code = 80, NAvalue = NULL, threshhold = 3, Method = "median",logoutput = F){
+#' To keep track of what vales were evaluated and removed the output "dspk.StateOfValue" is generated.
+#' The state of value of the deleted values will be set to “state.of.value.code” (default 92). The
+#' state of value of the values that passed the despike test will be set to
+#' “good.state.of.value.code” (default 80). If the value was unchecked (due to too few point)
+#' then the state of value will be left as is.
+#' If the no "sate.of.value.data" was provided then the state of value for unckecked will be
+#' "default.state.of.value.code" (default 110).
+#'
+#' @param Data A dataframe. Leave as NULL if you are entering in vectors directly.
+#' @param Value A vector, datatable column name as a string or datatable column number as numeric
+#' @param NumDateTime Numeric datetime. A vector, datatable column name as a string or datatable column number as numeric
+#' @param sampling.interval Time between samples for use in handling data gaps. May be left as NULL and the function will calculate it.
+#' @param State.of.value.data A vector, datatable column name as a string or datatable column number as numeric
+#' @param state.of.value.code Number that deleted values are marked with
+#' @param good.state.of.value.code Number that checked values are marked with
+#' @param default.state.of.value.code Number that unchecked values are marked with if no State.of.value.data was provided.
+#' @param NAvalue Value that is read as NA
+#' @param threshold Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.
+#' @param Method Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.
+#' @param logoutput TRUE if you want to have a logged record of what the function did
+#'
+#' @return returns a datatable with columns dspk.Values and dspk.StateOfValue containing the filtered data.
+#' If logoutput is TRUE, then $data contains the datatable and $logdata contains the info for the log file
+#' @export
+#'
+#' @examples
+#' SomeValues <- c(5,6,2,3,5,66,2,2,3,69,8,2,3,3)
+#' SomeTimes <- c(1,2,3,4,5,6,7,8,9,22,23,24,25,26)
+#' ADataframe <- data.frame(SomeValues,SomeTimes)
+#'
+#' #entering in a vector into the function.
+#' dspk.Spikefilter(Value = SomeValues)
+#' #entering a dataframe and column name into the function
+#' dspk.Spikefilter(Data = ADataframe, Value = "SomeValues")
+#' #entering a dataframe and column number into the function
+#' dspk.Spikefilter(Data = ADataframe, Value = 1)
+#'
+#' #If you have data gaps then provide sampling times so that the
+#' #function won't compare data that isn't actually next to each
+#' #other in time. The time must be provided as a numeric class.
+#' dspk.Spikefilter(Value = SomeValues, NumDateTime = SomeTimes)
+#'
+#'
+#' #------------------------------------------------------------------------
+#' # If you enter in no "Method" or "threshold" it will evaluate the
+#' #despiking using the default method of a threshold of 3 median absolute
+#' #deviations from the median.
+#'
+#' #Running the despiking using the threshold of 5 median absolute deviations from the median.
+#' dspk.Spikefilter(Value = SomeValues, threshold = 5)
+#' #Running the despiking using the threshold of 5 standard deviations from the mean.
+#' dspk.Spikefilter(Value = SomeValues, Method = "mean", threshold = 5)
+#'
+dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.interval = NULL, State.of.value.data = NULL, state.of.value.code = 92, good.state.of.value.code = 80, default.state.of.value.code = 110,  NAvalue = NULL, threshold = 3, Method = "median",logoutput = F){
   #message("Spike removal")
   if(!(is.numeric(good.state.of.value.code)&length(good.state.of.value.code)==1)) stop('State of value codes must be a number')
   if(!(is.numeric(state.of.value.code)&length(state.of.value.code)==1)) stop('State of value codes must be a number')
@@ -262,7 +333,7 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
   dspk.Values <- dspk.vectorize(Data = Data, Value = Value, na.strings = c(NAvalue,NA),sup.warn = T)
   #vectorize State of Value
   if(is.null(State.of.value.data)){
-    dspk.StateOfValue <- rep(110,length(dspk.Values)) #if no state of value is provided make one labled 110 (not evaluated)
+    dspk.StateOfValue <- rep(default.state.of.value.code,length(dspk.Values)) #if no state of value is provided make one labled 110 (not evaluated)
   }else{dspk.StateOfValue <- dspk.vectorize(Data = Data, Value = State.of.value.data, na.strings = c(NAvalue,NA),sup.warn = T)}
   #vectorize numeric date time
   if(is.null(NumDateTime)){ #if no datetime given
@@ -321,7 +392,7 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
 
       if (length(v)>4){
         x <- dspk.Values[i] #value of this sample site
-        spike <- ifelse(Method == "median",abs(median(v)-x)>threshhold*mad(v, na.rm = T),abs(mean(v)-x)>threshhold*sd(v, na.rm = T))
+        spike <- ifelse(Method == "median",abs(median(v)-x)>threshold*mad(v, na.rm = T),abs(mean(v)-x)>threshold*sd(v, na.rm = T))
         dspk.StateOfValue[i] <- ifelse(spike,state.of.value.code,good.state.of.value.code) #if statment to determine if it is a spike
       }
     }
@@ -348,7 +419,7 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
 
     if (length(v)>4){
       x <- dspk.Values[i] #value of this sample site
-      spike <- ifelse(Method == "median",abs(median(v)-x)>threshhold*mad(v, na.rm = T),abs(mean(v)-x)>threshhold*sd(v, na.rm = T))
+      spike <- ifelse(Method == "median",abs(median(v)-x)>threshold*mad(v, na.rm = T),abs(mean(v)-x)>threshold*sd(v, na.rm = T))
       dspk.StateOfValue[i] <- ifelse(spike,state.of.value.code,good.state.of.value.code) #if statment to determine if it is a spike
     }
   }
@@ -379,19 +450,47 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
 
 #' Linear interpolation
 #'
-#' @param Data
-#' @param Value
+#' Linear interpolation between gaps. Excludes gaps greater than "max.gap". If no "NumDateTime" is provided
+#' then max.gap is in the unit samplings. If a "NumDateTime" is provided then max.gap must be in the same unit.
+#' The entered in "NumDateTime" must be numeric class.
+#'
+#' @param Data A dataframe. Leave as NULL if you are entering in vectors.
+#' @param Value A vector, datatable column name as a string or datatable column number as numeric
 #' @param precision If you enter in a precision then it will round the interpolated values. Precision is the is the smallest measurable unit on the scale. e.g. 13000 would have precision = 1000 and 0.23 would have precision = 0.01
-#' @param NumDateTime
+#' @param NumDateTime A Numeric datetime. Vector, datatable column name as a string or datatable column number as numeric
 #' @param max.gap is the largest data gap that you want to perform linear interpolation on.
-#' @param State.of.value.data
-#' @param state.of.value.code
-#' @param NAvalue
-#' @param logoutput
+#' @param State.of.value.data A vector, datatable column name as a string or datatable column number as numeric
+#' @param state.of.value.code A number that lables all values that were interpolated
+#' @param default.state.of.value.code Number that values are marked with if no State.of.value.data was provided.
+#' @param NAvalue This values is read as NA
+#' @param logoutput TRUE if you want to have a logged record of what the function did
 #'
-#' @return
+#' @return returns a datatable with columns dspk.Values and dspk.StateOfValue containing the interpolated data.
+#' If logoutput is TRUE, then $data contains the datatable and $logdata contains the info for the log file
 #'
-dspk.DataGapInterpolation = function(Data = NULL, Value, precision = NULL, NumDateTime=NULL, max.gap = Inf, State.of.value.data = NULL, state.of.value.code = 93, NAvalue = NULL,logoutput = F){
+#' @export
+#'
+#' @examples
+#' SomeValues <- c(5,NA,NA,NA,5,3,2,2,3,NA,8,2,3,3)
+#' SomeTimes <- c(1,2,3,4,5,6,7,8,9,22,23,24,25,26)
+#' ADataframe <- data.frame(SomeValues,SomeTimes)
+#'
+#' #entering in a vector into the function.
+#' dspk.DataGapInterpolation(Value = SomeValues)
+#' #entering a dataframe and column name into the function
+#' dspk.DataGapInterpolation(Data = ADataframe, Value = "SomeValues")
+#' #entering a dataframe and column number into the function
+#' dspk.DataGapInterpolation(Data = ADataframe, Value = 1)
+#'
+#' #If you don't want gaps larger than 2 samplings to be interpolated
+#' dspk.DataGapInterpolation(Value = SomeValues, max.gap = 2)
+#'
+#' #If you have data gaps then provide sampling times so that the
+#' #function will take the sampling times into account when assesing max.gap.
+#' #The time must be provided as a numeric class and max.gap must be in the
+#' #same unit as your provided time.
+#' dspk.DataGapInterpolation(Value = SomeValues, NumDateTime = SomeTimes, max.gap = 2)
+dspk.DataGapInterpolation = function(Data = NULL, Value, precision = NULL, NumDateTime=NULL, max.gap = Inf, State.of.value.data = NULL, state.of.value.code = 93, default.state.of.value.code = 110, NAvalue = NULL,logoutput = F){
   #message("gap interpolation")
   if(!(is.numeric(state.of.value.code)&length(state.of.value.code)==1)) stop('State of value codes must be a number')
   if(!((is.numeric(precision)&length(precision)==1)|is.null(precision))) stop('The precision must be a number or NULL. This is the smallest measurable unit on the scale. e.g. 13000 would have precision = 1000 and 0.23 would have precision = 0.01')
@@ -400,7 +499,7 @@ dspk.DataGapInterpolation = function(Data = NULL, Value, precision = NULL, NumDa
   dspk.Values <- dspk.vectorize(Data = Data, Value = Value, na.strings = c(NAvalue,NA),sup.warn = T)
   #vectorize State of Value
   if(is.null(State.of.value.data)){
-    dspk.StateOfValue <- rep(110,length(dspk.Values)) #if no state of value is provided make one labled 110 (not evaluated)
+    dspk.StateOfValue <- rep(default.state.of.value.code,length(dspk.Values)) #if no state of value is provided make one labled 110 (not evaluated)
   }else{dspk.StateOfValue <- dspk.vectorize(Data = Data, Value = State.of.value.data, na.strings = c(NAvalue,NA),sup.warn = T)}
   #vectorize numeric date time
   if(is.null(NumDateTime)){ #if no datetime given
@@ -498,6 +597,8 @@ dspk.DataGapInterpolation = function(Data = NULL, Value, precision = NULL, NumDa
 
 
 #' Batch process directory of CSV files
+#'
+#' This function is not exported
 #'
 #' !!!!!!!!!!enter CSV.table in as the datasource datatable in the quoted process!!!!!!!!!!!!!!!
 #' process that you wish to batch needs to be written out between quotations (") and within the process script make sure to only use apostrophies (') and not quotations (")
@@ -631,7 +732,7 @@ dspk.BatchProcess <- function(directory, output.directory, file.name.note = '', 
 #'
 #' Step 2: Despiking: Each csv file generated from the previous step will be
 #' processed and saved separately. With the default “despike.Method” median
-#' and the default “despike.threshhold” 3: all data points that are more than 3
+#' and the default “despike.threshold” 3: all data points that are more than 3
 #' median absolute deviations away from the median of the 10 surrounding data
 #' points (5 before and 5 after) will be deleted. At least 5 surrounding data points
 #' is required for the sample to be evaluated. The algorithm will not look farther
@@ -698,7 +799,7 @@ dspk.BatchProcess <- function(directory, output.directory, file.name.note = '', 
 #'  (the scale factor 1.4826 is used assuming normal distribution) from the
 #' median of the 10 surrounding data points (5 before and 5 after) are
 #' automatically deleted. The threshold of 3 can be changed with
-#' "despike.threshhold =" You can set despike.Method = "mean" to use standard
+#' "despike.threshold =" You can set despike.Method = "mean" to use standard
 #' deviations and mean for the algorithm instead of the default median absolute
 #' deviations and median. However median is a much more robust statistic for
 #' handling outliers.
@@ -767,7 +868,7 @@ dspk.BatchProcess <- function(directory, output.directory, file.name.note = '', 
 #' @param sampling.interval As numeric, the time between samples. If you enter NULL then it will calculate it for you. By default NULL.
 #' @param despiked.state.of.value.code Number indicating that a given value was deleted during the despiking. By default 92.
 #' @param good.state.of.value.code Number indicating that a given value has been check and deemed not a spike during the despiking. By default 80.
-#' @param despike.threshhold Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.
+#' @param despike.threshold Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.
 #' @param despike.Method Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.
 #' @param precision A number indicating the precision of the input values. Interpolated values will be rounded to this precision. If left as NULL then the numbers will be rounded to the largest decimal length found in the data.
 #' @param max.gap As numeric, the time span of the maximum data gap you wish to interpolate
@@ -852,7 +953,7 @@ dspk.BatchProcess <- function(directory, output.directory, file.name.note = '', 
 #'      Value = datatable$values, val.NAvalue = 999,
 #'      #The values are found in datatable$values. 999 stands for no-value
 #'      Min=(0), Max=200, #The minimum resonable value is 0 and the maximum  is 200
-#'      despike.threshhold = 4, despike.Method = "mean",
+#'      despike.threshold = 4, despike.Method = "mean",
 #'      #The despiking algorithm is all data points more than 4 standard deviations
 #'      #from the mean of the surrounding 10 data points
 #'      precision = 0.01, #The data has a precision to the hundredth decimal place.
@@ -864,7 +965,7 @@ dspk.BatchProcess <- function(directory, output.directory, file.name.note = '', 
 #'      Data = datatable, Value = 'values', val.NAvalue = 999,
 #'      #The values are found in datatable$values. 999 stands for no-value
 #'      Min=(0), Max=200, #The minimum reasonable value is 0 and the maximum is 200
-#'      despike.threshhold = 4, despike.Method = "mean",
+#'      despike.threshold = 4, despike.Method = "mean",
 #'      #The despiking algorithm is all data points more than 4 standard deviations
 #'      #from the mean of the surrounding 10 data points
 #'      max.gap = 10)  #the maximum data gap that should be interpolated is 10 samples.
@@ -912,7 +1013,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess <- function(steps = c(1,2,3),input.di
                                                        ConditionalMinMaxColumn = NULL, ConditionalMinMaxValues = NULL, ConditionalMin = NULL, ConditionalMax = NULL,
                                                        Min = (-Inf), Max = Inf, minmax.state.of.value.code = 91,
                                                        #Despike
-                                                       sampling.interval = NULL, despiked.state.of.value.code = 92, good.state.of.value.code = 80, despike.threshhold = 3, despike.Method = "median",
+                                                       sampling.interval = NULL, despiked.state.of.value.code = 92, good.state.of.value.code = 80, despike.threshold = 3, despike.Method = "median",
                                                        #interpolate
                                                        precision = NULL, max.gap = Inf) {
 
@@ -948,7 +1049,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess <- function(steps = c(1,2,3),input.di
   if(is.null(input.directory))logdata <- rbind(logdata,paste('On dataframe from R environment:', ifelse(is.data.frame(Data),deparse(substitute(Data)),itqv(Data))))
   logdata <- rbind(logdata,'')
   logdata <- rbind(logdata,'')
-  logdata <- rbind(logdata,'Despiking algorithm: With the default “despike.Method” median and the default “despike.threshhold” 3: all data points that are more than 3 median absolute deviations ')
+  logdata <- rbind(logdata,'Despiking algorithm: With the default “despike.Method” median and the default “despike.threshold” 3: all data points that are more than 3 median absolute deviations ')
   logdata <- rbind(logdata,'away from the median of the 10 surrounding data points (5 before and 5 after) will be deleted. At least 5 surrounding data points is required for the sample to be evaluated. ')
   logdata <- rbind(logdata,'The algorithm will not look farther than 5 sampling intervals before and after the data point, for handling data gaps. If a “sampling.interval” is not provided then it will ')
   logdata <- rbind(logdata,'be calculated as the mode of the interval between samples. The "dspk.StateOfValue" of the deleted values will be set to “despiked.state.of.value.code” (default 92). The ')
@@ -967,7 +1068,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess <- function(steps = c(1,2,3),input.di
   logdata <- rbind(logdata,paste('ConditionalMinMaxColumn =', itqv(ConditionalMinMaxColumn), ', ConditionalMinMaxValues =', itqv(ConditionalMinMaxValues), ', ConditionalMin =', itqv(ConditionalMin), ', ConditionalMax =', itqv(ConditionalMax)))
   logdata <- rbind(logdata,paste('Min =', itqv(Min), ', Max =', itqv(Max), ', minmax.state.of.value.code =', itqv(minmax.state.of.value.code)))
   logdata <- rbind(logdata,paste('Step 2 despiking:'))
-  logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshhold =', itqv(despike.threshhold), ', despike.Method =', itqv(despike.Method)))
+  logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshold =', itqv(despike.threshold), ', despike.Method =', itqv(despike.Method)))
   logdata <- rbind(logdata,paste('Step 3 data gap interpolation:'))
   logdata <- rbind(logdata,paste('precision =', itqv(precision), ', max.gap =', itqv(max.gap)))
 
@@ -1203,7 +1304,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess <- function(steps = c(1,2,3),input.di
         }else{sampling.interval2<-sampling.interval}
 
         #--run the batched process and save it to a new table--
-        New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method,logoutput = T)
+        New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
         logdata <- rbind(logdata,t(t(unlist(New.table$logdata))))
         New.table <- as.data.frame(New.table$data)
         #!!!!!!!!!This is a work around for not adding all the data from the before function

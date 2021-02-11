@@ -7,6 +7,10 @@
 dspk.vectorize(Value, Data = NULL, na.strings = NULL, sup.warn = FALSE)
 }
 \arguments{
+\item{Value}{Either the vector itself, the column name as a string in quotes or the column number as numeric}
+
+\item{Data}{An R object dataframe. Optional.}
+
 \item{na.strings}{allows you to handle NA values. ex: na.strings = c(-777, NA) all values of -777 will be replaced with values of NA}
 
 \item{sup.warn}{if TRUE it will prevent warning messages}
@@ -15,6 +19,9 @@ dspk.vectorize(Value, Data = NULL, na.strings = NULL, sup.warn = FALSE)
 A vector object of the input
 }
 \description{
+This function is not exported
+}
+\details{
 Vector data can be processed much faster than data in a dataframe.
 Can take a vector directly, a data frame and a column name or a data frame and a column number.
 }

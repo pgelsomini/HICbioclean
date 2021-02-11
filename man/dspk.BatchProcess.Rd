@@ -22,11 +22,13 @@ dspk.BatchProcess(
 
 }
 \description{
+This function is not exported
+}
+\details{
 !!!!!!!!!!enter CSV.table in as the datasource datatable in the quoted process!!!!!!!!!!!!!!!
 process that you wish to batch needs to be written out between quotations (") and within the process script make sure to only use apostrophies (') and not quotations (")
 e.g.: batched.process = "dspk.TableFormatting(Data = CSV.table, Value = 'Value', DateTime =  'DateTime', NAvalue = -777, datetime.format = '%Y-%m-%d %H:%M:%S', datetime.timezone = 'Etc/GMT-1', add.original.data = T)"
-}
-\details{
+
 make sure that when you enter the path name for the directory it has forward-slashes(/) or double-back-slashes (\\\\) and not back-slashes(\).
 If you copy the directory path from windows, it will have back-slashes(\) and these need to be changed to forward-slashes(/) or double-back-slashes (\\\\)
 

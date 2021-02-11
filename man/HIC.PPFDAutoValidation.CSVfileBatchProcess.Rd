@@ -29,7 +29,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess(
   sampling.interval = NULL,
   despiked.state.of.value.code = 92,
   good.state.of.value.code = 80,
-  despike.threshhold = 3,
+  despike.threshold = 3,
   despike.Method = "median",
   precision = NULL,
   max.gap = Inf,
@@ -111,7 +111,7 @@ single vector object (unquoted) such as ‘DateTime = mydata$time’ or
 
 \item{good.state.of.value.code}{Number indicating that a given value has been check and deemed not a spike during the despiking. By default 80.}
 
-\item{despike.threshhold}{Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.}
+\item{despike.threshold}{Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.}
 
 \item{despike.Method}{Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.}
 
@@ -217,7 +217,7 @@ Unchecked data is given the state of value code 110 (default) and missing data i
 
    PPFD data gaps of maximum one hour (default) are linear interpolated. The stat of value codes are not changed. If the state of value code says it was deleted or was missing but there is a value, then it can be assumed that it was interpolated.
 
-   Light attenuation coefficient kd is calculated as kd = 1/Δz*ln(E1/E2) where Δz is the distance between sensors in meters 0.4m (default) and E1 is the upper sensor PPFD and E2 is the lower sensor PPFD. Saved to column ‘kd’.
+   Light attenuation coefficient kd is calculated as kd = 1/Δz*ln(E1/E2) where Δz is the distance between sensors in meters 0.4m (default) and E1 is the upper sensor PPFD and E2 is the lower sensor PPFD. Saved to column ‘kd’. Unite m^-1.
 
    Data saved as csv files to the subdirectory ‘step3Interpol.kd’.
 

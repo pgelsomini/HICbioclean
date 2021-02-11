@@ -249,7 +249,7 @@ HIC.Continuous.Data.Import.Format = function(InputDirectory,OutputDirectory, Dat
 #'
 #'    PPFD data gaps of maximum one hour (default) are linear interpolated. The stat of value codes are not changed. If the state of value code says it was deleted or was missing but there is a value, then it can be assumed that it was interpolated.
 #'
-#'    Light attenuation coefficient kd is calculated as kd = 1/Δz*ln(E1/E2) where Δz is the distance between sensors in meters 0.4m (default) and E1 is the upper sensor PPFD and E2 is the lower sensor PPFD. Saved to column ‘kd’.
+#'    Light attenuation coefficient kd is calculated as kd = 1/Δz*ln(E1/E2) where Δz is the distance between sensors in meters 0.4m (default) and E1 is the upper sensor PPFD and E2 is the lower sensor PPFD. Saved to column ‘kd’. Unite m^-1.
 #'
 #'    Data saved as csv files to the subdirectory ‘step3Interpol.kd’.
 #'
@@ -315,7 +315,7 @@ HIC.Continuous.Data.Import.Format = function(InputDirectory,OutputDirectory, Dat
 #' @param sampling.interval As numeric, the time between samples. If you enter NULL then it will calculate it for you. By default NULL.
 #' @param despiked.state.of.value.code Number indicating that a given value was deleted during the despiking. By default 92.
 #' @param good.state.of.value.code Number indicating that a given value has been check and deemed not a spike during the despiking. By default 80.
-#' @param despike.threshhold Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.
+#' @param despike.threshold Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.
 #' @param despike.Method Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.
 #' @param precision A number indicating the precision of the input values. Interpolated values will be rounded to this precision. If left as NULL then the numbers will be rounded to the largest decimal length found in the data.
 #' @param max.gap As numeric, the time span of the maximum data gap you wish to interpolate.
@@ -368,7 +368,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
   ConditionalMinMaxColumn = NULL, ConditionalMinMaxValues = NULL, ConditionalMin = NULL, ConditionalMax = NULL,
   Min = 0, Max = 2000, minmax.state.of.value.code = 91,
   #Despike
-  sampling.interval = NULL, despiked.state.of.value.code = 92, good.state.of.value.code = 80, despike.threshhold = 3, despike.Method = "median",
+  sampling.interval = NULL, despiked.state.of.value.code = 92, good.state.of.value.code = 80, despike.threshold = 3, despike.Method = "median",
   #interpolate
   precision = NULL, max.gap = Inf,
   DeletedSpikeOtherSensor.state.of.value.code = 94,
@@ -417,7 +417,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
   if(is.null(input.directory))logdata <- rbind(logdata,paste('On dataframe from R environment:', ifelse(is.data.frame(DataUpper),deparse(substitute(DataUpper)),itqv(DataUpper)),'and',ifelse(is.data.frame(DataLower),deparse(substitute(DataLower)),itqv(DataLower))))
   logdata <- rbind(logdata,'')
   logdata <- rbind(logdata,'')
-  logdata <- rbind(logdata,'Despiking algorithm: With the default “despike.Method” median and the default “despike.threshhold” 3: all data points that are more than 3 median absolute deviations ')
+  logdata <- rbind(logdata,'Despiking algorithm: With the default “despike.Method” median and the default “despike.threshold” 3: all data points that are more than 3 median absolute deviations ')
   logdata <- rbind(logdata,'away from the median of the 10 surrounding data points (5 before and 5 after) will be deleted. At least 5 surrounding data points is required for the sample to be evaluated. ')
   logdata <- rbind(logdata,'The algorithm will not look farther than 5 sampling intervals before and after the data point, for handling data gaps. If a “sampling.interval” is not provided then it will ')
   logdata <- rbind(logdata,'be calculated as the mode of the interval between samples. The "dspk.StateOfValue" of the deleted values will be set to “despiked.state.of.value.code” (default 92). The ')
@@ -436,7 +436,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
   logdata <- rbind(logdata,paste('ConditionalMinMaxColumn =', itqv(ConditionalMinMaxColumn), ', ConditionalMinMaxValues =', itqv(ConditionalMinMaxValues), ', ConditionalMin =', itqv(ConditionalMin), ', ConditionalMax =', itqv(ConditionalMax)))
   logdata <- rbind(logdata,paste('Min =', itqv(Min), ', Max =', itqv(Max), ', minmax.state.of.value.code =', itqv(minmax.state.of.value.code)))
   logdata <- rbind(logdata,paste('Despiking:'))
-  logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshhold =', itqv(despike.threshhold), ', despike.Method =', itqv(despike.Method)))
+  logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshold =', itqv(despike.threshold), ', despike.Method =', itqv(despike.Method)))
   logdata <- rbind(logdata,paste('DeletedSpikeOtherSensor.state.of.value.code =',itqv(DeletedSpikeOtherSensor.state.of.value.code), ', NotDeletedSpikeBothSensors.state.of.value.code =',itqv(NotDeletedSpikeBothSensors.state.of.value.code)))
   logdata <- rbind(logdata,paste('Step 3 data gap interpolation:'))
   logdata <- rbind(logdata,paste('precision =', itqv(precision), ', max.gap =', itqv(max.gap)))
@@ -597,10 +597,10 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
       message('despiking')
       logdata <- rbind(logdata,'')
       logdata <- rbind(logdata,'Despike PPFD')
-      SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method,logoutput = T)
+      SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
       logdata <- rbind(logdata,t(t(unlist(SFT1$logdata))))
       SFT1 <- as.data.frame(SFT1$data)
-      SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method,logoutput = T)
+      SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
       logdata <- rbind(logdata,t(t(unlist(SFT2$logdata))))
       logdata <- rbind(logdata,'')
       SFT2 <- as.data.frame(SFT2$data)
@@ -695,7 +695,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
       logdata <- rbind(logdata,'')
       logdata <- rbind(logdata,'despike kd and remove PPFD values where kd spikes')
       message('despiking kd and remove PPFD values where kd spikes')
-      kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method, logoutput = T)
+      kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method, logoutput = T)
       logdata <- rbind(logdata,t(t(unlist(kddspk$logdata))))
       kddspk <- as.data.frame(kddspk$data)
       con <- kddspk$dspk.StateOfValue == kdDespiked.state.of.value.code #spike in kd

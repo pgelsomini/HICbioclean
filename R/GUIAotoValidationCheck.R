@@ -1090,7 +1090,7 @@ HIC.App.auto <- function(){
         sampling.interval = input$sampling.interval.dspk ; if(is.na(sampling.interval))sampling.interval<-NULL
         despiked.state.of.value.code = input$sovdespikedspk
         good.state.of.value.code = input$sovgooddspk
-        despike.threshhold = input$threshold.dspk ; if(is.na(despike.threshhold)){showNotification('Despiking threshold was left blank. It was set to 3.',type = 'error') ; despike.threshhold<-3}
+        despike.threshold = input$threshold.dspk ; if(is.na(despike.threshold)){showNotification('Despiking threshold was left blank. It was set to 3.',type = 'error') ; despike.threshold<-3}
         despike.Method = input$method.dspk
         #interpolate
         precision = input$precision.dspk ; if(is.na(precision))precision<-NULL
@@ -1163,7 +1163,7 @@ HIC.App.auto <- function(){
           logdata <- rbind(logdata,paste('ConditionalMinMaxColumn =', itqv(ConditionalMinMaxColumn), ', ConditionalMinMaxValues =', itqv(ConditionalMinMaxValues), ', ConditionalMin =', itqv(ConditionalMin), ', ConditionalMax =', itqv(ConditionalMax)))
           logdata <- rbind(logdata,paste('Min =', itqv(Min), ', Max =', itqv(Max), ', minmax.state.of.value.code =', itqv(minmax.state.of.value.code)))
           logdata <- rbind(logdata,paste('Despiking:'))
-          logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshhold =', itqv(despike.threshhold), ', despike.Method =', itqv(despike.Method)))
+          logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshold =', itqv(despike.threshold), ', despike.Method =', itqv(despike.Method)))
           logdata <- rbind(logdata,paste('DeletedSpikeOtherSensor.state.of.value.code =',itqv(DeletedSpikeOtherSensor.state.of.value.code), ', NotDeletedSpikeBothSensors.state.of.value.code =',itqv(NotDeletedSpikeBothSensors.state.of.value.code)))
           logdata <- rbind(logdata,paste('Step 3 data gap interpolation:'))
           logdata <- rbind(logdata,paste('precision =', itqv(precision), ', max.gap =', itqv(max.gap)))
@@ -1330,10 +1330,10 @@ HIC.App.auto <- function(){
                 message('despiking')
                 logdata <- rbind(logdata,'')
                 logdata <- rbind(logdata,'Despike PPFD')
-                SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method,logoutput = T)
+                SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
                 logdata <- rbind(logdata,t(t(unlist(SFT1$logdata))))
                 SFT1 <- as.data.frame(SFT1$data)
-                SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method,logoutput = T)
+                SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
                 logdata <- rbind(logdata,t(t(unlist(SFT2$logdata))))
                 logdata <- rbind(logdata,'')
                 SFT2 <- as.data.frame(SFT2$data)
@@ -1430,7 +1430,7 @@ HIC.App.auto <- function(){
                 logdata <- rbind(logdata,'')
                 logdata <- rbind(logdata,'despike kd and remove PPFD values where kd spikes')
                 message('despiking kd and remove PPFD values where kd spikes')
-                kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method, logoutput = T)
+                kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method, logoutput = T)
                 logdata <- rbind(logdata,t(t(unlist(kddspk$logdata))))
                 kddspk <- as.data.frame(kddspk$data)
                 con <- kddspk$dspk.StateOfValue == kdDespiked.state.of.value.code #spike in kd
@@ -1566,7 +1566,7 @@ HIC.App.auto <- function(){
             logdata <- rbind(logdata,paste('ConditionalMinMaxColumn =', itqv(ConditionalMinMaxColumn), ', ConditionalMinMaxValues =', itqv(ConditionalMinMaxValues), ', ConditionalMin =', itqv(ConditionalMin), ', ConditionalMax =', itqv(ConditionalMax)))
             logdata <- rbind(logdata,paste('Min =', itqv(Min), ', Max =', itqv(Max), ', minmax.state.of.value.code =', itqv(minmax.state.of.value.code)))
             logdata <- rbind(logdata,paste('Step 2 despiking:'))
-            logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshhold =', itqv(despike.threshhold), ', despike.Method =', itqv(despike.Method)))
+            logdata <- rbind(logdata,paste('sampling.interval =', itqv(sampling.interval), ', despiked.state.of.value.code =', itqv(despiked.state.of.value.code), ', good.state.of.value.code =', itqv(good.state.of.value.code), ', despike.threshold =', itqv(despike.threshold), ', despike.Method =', itqv(despike.Method)))
             logdata <- rbind(logdata,paste('Step 3 data gap interpolation:'))
             logdata <- rbind(logdata,paste('precision =', itqv(precision), ', max.gap =', itqv(max.gap), ', interpolated.state.of.value.code =', itqv(interpolated.state.of.value.code)))
 
@@ -1799,7 +1799,7 @@ HIC.App.auto <- function(){
                   }else{sampling.interval2<-sampling.interval}
 
                   #--run the batched process and save it to a new table--
-                  New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method,logoutput = T)
+                  New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
                   logdata <- rbind(logdata,t(t(unlist(New.table$logdata))))
                   New.table <- as.data.frame(New.table$data)
                   #!!!!!!!!!This is a work around for not adding all the data from the before function
@@ -2126,7 +2126,7 @@ HIC.App.auto <- function(){
                 }
 
                 #--run the batched process and save it to a new table--
-                New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshhold = despike.threshhold, Method = despike.Method)
+                New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method)
                 #!!!!!!!!!This is a work around for not adding all the data from the before function
                 CSV.table$dspk.Values <- New.table$dspk.Values
                 CSV.table$dspk.StateOfValue <- New.table$dspk.StateOfValue

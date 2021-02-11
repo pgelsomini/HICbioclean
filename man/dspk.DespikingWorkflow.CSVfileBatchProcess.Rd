@@ -29,7 +29,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess(
   sampling.interval = NULL,
   despiked.state.of.value.code = 92,
   good.state.of.value.code = 80,
-  despike.threshhold = 3,
+  despike.threshold = 3,
   despike.Method = "median",
   precision = NULL,
   max.gap = Inf
@@ -107,7 +107,7 @@ single vector object (unquoted) such as ‘DateTime = mydata$time’ or
 
 \item{good.state.of.value.code}{Number indicating that a given value has been check and deemed not a spike during the despiking. By default 80.}
 
-\item{despike.threshhold}{Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.}
+\item{despike.threshold}{Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.}
 
 \item{despike.Method}{Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.}
 
@@ -185,7 +185,7 @@ directory.
 
 Step 2: Despiking: Each csv file generated from the previous step will be
 processed and saved separately. With the default “despike.Method” median
-and the default “despike.threshhold” 3: all data points that are more than 3
+and the default “despike.threshold” 3: all data points that are more than 3
 median absolute deviations away from the median of the 10 surrounding data
 points (5 before and 5 after) will be deleted. At least 5 surrounding data points
 is required for the sample to be evaluated. The algorithm will not look farther
@@ -252,7 +252,7 @@ sample points that are more than the threshold 3 median absolute deviations
  (the scale factor 1.4826 is used assuming normal distribution) from the
 median of the 10 surrounding data points (5 before and 5 after) are
 automatically deleted. The threshold of 3 can be changed with
-"despike.threshhold =" You can set despike.Method = "mean" to use standard
+"despike.threshold =" You can set despike.Method = "mean" to use standard
 deviations and mean for the algorithm instead of the default median absolute
 deviations and median. However median is a much more robust statistic for
 handling outliers.
@@ -350,7 +350,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess(
      Value = datatable$values, val.NAvalue = 999,
      #The values are found in datatable$values. 999 stands for no-value
      Min=(0), Max=200, #The minimum resonable value is 0 and the maximum  is 200
-     despike.threshhold = 4, despike.Method = "mean",
+     despike.threshold = 4, despike.Method = "mean",
      #The despiking algorithm is all data points more than 4 standard deviations
      #from the mean of the surrounding 10 data points
      precision = 0.01, #The data has a precision to the hundredth decimal place.
@@ -362,7 +362,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess(
      Data = datatable, Value = 'values', val.NAvalue = 999,
      #The values are found in datatable$values. 999 stands for no-value
      Min=(0), Max=200, #The minimum reasonable value is 0 and the maximum is 200
-     despike.threshhold = 4, despike.Method = "mean",
+     despike.threshold = 4, despike.Method = "mean",
      #The despiking algorithm is all data points more than 4 standard deviations
      #from the mean of the surrounding 10 data points
      max.gap = 10)  #the maximum data gap that should be interpolated is 10 samples.

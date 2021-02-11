@@ -40,6 +40,9 @@ data table with values in "dspk.Values", numeric datetime in "dspk.DateTimeNum",
 if add.original.data is TRUE then all the data in the input data table will be included.
 }
 \description{
+This function is not exported
+}
+\details{
 Puts data values and datetime in a unique column and creates a state of value column. If the state of value column "dspk.StateOfValue" already
 exists then those values will be kept as the state of values. if datetime is numeric then those values will be kept. If date time is
 a character format, then it will be converted into UNIX seconds. If datetime is missing then the records will be numbered cosecutivly.

@@ -16,11 +16,12 @@
 #'
 #' Codes for each site number and parameter for importation into the Flemish Hydrological Information Center database.
 #'
-#' @format A data frame with 3 variables:
+#' @format A data frame with 4 variables:
 #' \describe{
 #'   \item{StationNo}{Continuous measurement station number}
 #'   \item{Par}{Parameter}
 #'   \item{Code}{Database code}
+#'   \item{Unit}{Unit}
 #'   ...
 #' }
 #' @source Flemish Hydrological Information Center
