@@ -175,11 +175,11 @@ forward-slashes(/) or double-back-slashes(\\\\).
 Input directory must be a folder containing all the csv files of the PPFD data with the upper
 and lower sensor data files together with unique station names for each pair of files and
 consistent separate parameter IDs for the upper and lower sensors also in the file names.
-For example the files in your directory may be station1.PPFD1.csv, station1.PPFD.csv, station2.PPFD1.csv,
-station2.PPFD.csv where you have two stations (station1 and station2) and you have an upper sensor ID (PPFD1)
+For example the files in your directory may be station1_PPFD1.csv, station1_PPFD.csv, station2_PPFD1.csv,
+station2_PPFD.csv where you have two stations (station1 and station2) and you have an upper sensor ID (PPFD1)
 and a lower sensor ID (PPFD). You must give the ‘UpperSensorParameterName’ and the ‘LowerSensorParameterName’
 in order for the function to know which files belong to which sensor. This is not a generic
-function because it assumes that the components of the csv file names are separated by decimals(.)
+function because it assumes that the components of the csv file names are separated by underscore(_)
 and that when the files are arranged alphabetically, the upper and lower sensor pairs will be next to each other.
 
    Please see the FunctionLogFile.txt that was generated to see any error messages and details about the selected preferences and calculated preferences.

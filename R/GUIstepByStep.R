@@ -1,3 +1,4 @@
+
 #Shiny App for manual data cleaning of Cont continuous data
 #Pali Gelsomini ECOBE 2020
 
@@ -33,12 +34,12 @@
 #' HIC.App.format() # to format the HIC database output csv files
 #' HIC.App.auto() # to auto-validate the formatted data
 #' HIC.App.manual() # to manually check the auto-validated data
-HIC.App.manual <- function(){
+HIC.App.manual.StepByStep <- function(){
   require(shiny)
   require(colourpicker)
 
   markedgroupnumbering <- c(1,2,3,4,5,6,7,8,9)
-  names(markedgroupnumbering) <- c('1 Marked to be deleted','2 to be labled as suspect',3,4,5,6,7,8,9)
+  names(markedgroupnumbering) <- c('1 to be deleted',2,3,4,5,6,7,8,9)
 
   shinyApp(
     ui <- fluidPage(
@@ -46,201 +47,52 @@ HIC.App.manual <- function(){
       mainPanel(
         checkboxInput('PPFDdata','Working with PPFD data',value = F),
         tabsetPanel(type = "tabs",
-                    tabPanel("File upload",
-                             tabsetPanel(type="pills",
-                                         tabPanel("Files",
-                                                  fileInput("Contfile", "Choose Continuous CSV File",
-                                                            accept = c(
-                                                              "text/csv",
-                                                              "text/comma-separated-values,text/plain",
-                                                              ".csv")),
-                                                  tableOutput("ContDataHead"),
-                                                  fileInput("Perifile", "Choose Periodic CSV File",
-                                                            accept = c(
-                                                              "text/csv",
-                                                              "text/comma-separated-values,text/plain",
-                                                              ".csv")),
-                                                  tableOutput("PeriDataHead"),
-                                                  fileInput("Maintfile", "Choose sensor maintenance CSV File",
-                                                            accept = c(
-                                                              "text/csv",
-                                                              "text/comma-separated-values,text/plain",
-                                                              ".csv")),
-                                                  tableOutput("MaintDataHead")
-                                         ),
-                                         tabPanel("Options",
-                                                  tabsetPanel(type="tabs",
-                                                              tabPanel("Continuous data file",
-                                                                       textInput("Contsep","csv file column separator",","),
-                                                                       textInput("Contdec","csv file decimal indicator","."),
-                                                                       textInput("tContcol","Cont continuous UNIX time column","dspk.DateTimeNum"),
-                                                                       textInput("timezone","Time zone (GMT+1 = Etc/GMT-1)","Etc/GMT-1"),
-                                                                       textInput("valcol","Continuous Variable column","dspk.Values"),
-                                                                       textInput("statecol","State of value column","dspk.StateOfValue"),
-                                                                       textInput("StNamContcol","Station name column for continuous dataset","Station.Name"),
-                                                                       textInput("StNoContcol","Sation number column for continuous dataset","Station.Number"),
-                                                                       textInput("parContcol","Parameter name column for continuous dataset","Parameter.Name"),
-                                                                       textInput("parUnitContcol","Parameter unit column for continuous dataset","Parameter.Unit"),
+                    tabPanel("Step 1: File upload",
 
+                             fileInput("Contfile", "Choose Continuous CSV File",
+                                       accept = c(
+                                         "text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv")),
+                             tableOutput("ContDataHead"),
+                             fileInput("Perifile", "Choose Periodic CSV File",
+                                       accept = c(
+                                         "text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv")),
+                             tableOutput("PeriDataHead"),
+                             fileInput("Maintfile", "Choose sensor maintenance CSV File",
+                                       accept = c(
+                                         "text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv")),
+                             tableOutput("MaintDataHead")
 
-                                                                       textInput("par1Cont","Parameter 1 name in continuous dataset","DO"),
-                                                                       textInput("par2Cont","Parameter 2 name in continuous dataset","Chfyla"),
-                                                                       textInput("par3Cont","Parameter 3 name in continuous dataset","pH"),
-                                                                       textInput("par4Cont","Parameter 4 name in continuous dataset","PPFD1"),
-                                                                       textInput("par5Cont","Parameter 5 name in continuous dataset",""),
-                                                                       textInput("par6Cont","Parameter 6 name in continuous dataset",""),
-                                                                       textInput("par7Cont","Parameter 7 name in continuous dataset",""),
-                                                                       textInput("par8Cont","Parameter 8 name in continuous dataset",""),
-                                                                       textInput("par9Cont","Parameter 9 name in continuous dataset",""),
-                                                                       textInput("par10Cont","Parameter 10 name in continuous dataset","")),
-
-                                                              tabPanel("Periodic data file",
-                                                                       textInput("Perisep","csv file column separator",";"),
-                                                                       textInput("Peridec","csv file decimal indicator","."),
-                                                                       textInput("tPericol","Peri periodic time column","ReadingDate"),
-                                                                       textInput("StNamPericol","Station name column for periodic dataset","StationName"),
-                                                                       textInput("PeriParamcol","Column name for parameter","ParameterName"),
-                                                                       textInput('PeriValuecol',"Column name for values","ReadingValue"),
-                                                                       textInput("par1Pericol","Parameter 1 for periodic dataset","Oxygen"),
-                                                                       textInput("par2Pericol","Parameter 2 for periodic dataset","Chlorophyll a"),
-                                                                       textInput("par3Pericol","Parameter 3 for periodic dataset","pH"),
-                                                                       textInput("par4Pericol","Parameter 4 for periodic dataset","light attenuation coefficient"),
-                                                                       textInput("par5Pericol","Parameter 5 for periodic dataset",NULL),
-                                                                       textInput("par6Pericol","Parameter 6 for periodic dataset",NULL),
-                                                                       textInput("par7Pericol","Parameter 7 for periodic dataset",NULL),
-                                                                       textInput("par8Pericol","Parameter 8 for periodic dataset",NULL),
-                                                                       textInput("par9Pericol","Parameter 9 for periodic dataset",NULL),
-                                                                       textInput("par10Pericol","Parameter 10 for periodic dataset",NULL),
-                                                              ),
-                                                              tabPanel("Maintenance data file",
-                                                                       textInput("Maintsep","csv file column separator",","),
-                                                                       textInput("Maintdec","csv file decimal indicator","."),
-                                                                       textInput("tMaintcol","Maintenance UNIX time column","DateTimeUNIX"),
-                                                                       textInput("diviceMaintcol","Divice column in maintenance records","Toestel"),
-                                                                       textInput("actionMaintcol","Action type column in maintenance records","Staaltype")
-                                                              ),
-                                                              tabPanel("PPFD data",
-                                                                       numericInput('DistSensors','PPFD sensor pair distance in meters',0.4),
-                                                                       numericInput('kddlupper','Light attenuation coefficient kd detection limit upper sensor',1),
-                                                                       numericInput('kddllower','Light attenuation coefficient kd detection limit upper sensor',0.25),
-                                                                       textInput("kdparname","Light attenuation coefficient parameter name",'kd'),
-                                                                       textInput("PPFDUname","PPFD upper sensor parameter name","PPFD1"),
-                                                                       textInput("PPFDLname","PPFD lower sensor parameter name","PPFD")
-                                                              ),
-                                                              tabPanel("Graph",
-                                                                       tabsetPanel(type = "tabs",
-                                                                                   tabPanel("State of Value Continuous",
-                                                                                            fluidRow(
-                                                                                              column(6,"state of value num codes"),
-                                                                                              column(6,"Graphing preferences")
-                                                                                            ),
-                                                                                            fluidRow(
-                                                                                              column(2,"min"),
-                                                                                              column(2,"max"),
-                                                                                              column(2,"format"),
-                                                                                              column(4,"name"),
-                                                                                              column(2,"color")
-                                                                                            ),
-                                                                                            fluidRow("Validation work codes"),
-                                                                                            fluidRow(column(2,numericInput("min1",NULL,80)),column(2,numericInput("max1",NULL,80)),column(2,numericInput("for1",NULL,NULL)),column(2,"auto good"),column(2,textInput("state1",NULL,"auto good")),column(2,colourInput("col1",NULL,value = "#696969"))),
-                                                                                            fluidRow(column(2,numericInput("min2",NULL,91)),column(2,numericInput("max2",NULL,91)),column(2,numericInput("for2",NULL,NULL)),column(2,"min max filter deleted"),column(2,textInput("state2",NULL,"min max filter deleted")),column(2,colourInput("col2",NULL,value = "#e9967a"))),
-                                                                                            fluidRow(column(2,numericInput("min3",NULL,92)),column(2,numericInput("max3",NULL,92)),column(2,numericInput("for3",NULL,NULL)),column(2,"spike filter deleted"),column(2,textInput("state3",NULL,"spike filter deleted")),column(2,colourInput("col3",NULL,value = "#ee1289"))),
-                                                                                            fluidRow(column(2,numericInput("min4",NULL,93)),column(2,numericInput("max4",NULL,93)),column(2,numericInput("for4",NULL,NULL)),column(2,"manual interpolated"),column(2,textInput("state4",NULL,"manual interpolated")),column(2,colourInput("col4",NULL,value = "#66cd00"))),
-                                                                                            fluidRow(column(2,numericInput("min5",NULL,99)),column(2,numericInput("max5",NULL,99)),column(2,numericInput("for5",NULL,99)),column(2,"manual delete"),column(2,textInput("state5",NULL,"manual delete")),column(2,colourInput("col5",NULL,value = "#009acd"))),
-                                                                                            fluidRow("PPFD despiking specific codes"),
-                                                                                            fluidRow(column(2,numericInput("min30",NULL,94)),column(2,numericInput("max30",NULL,94)),column(2,numericInput("for30",NULL,NULL)),column(4,textInput("state30",NULL,"deleted, deleted in other sensor")),column(2,colourInput("col30",NULL,value = "#66CD00"))),
-                                                                                            fluidRow(column(2,numericInput("min31",NULL,95)),column(2,numericInput("max31",NULL,95)),column(2,numericInput("for31",NULL,NULL)),column(4,textInput("state31",NULL,"not deleted, spike in both sensors")),column(2,colourInput("col31",NULL,value = "#8D00CF"))),
-                                                                                            fluidRow(column(2,numericInput("min32",NULL,96)),column(2,numericInput("max32",NULL,96)),column(2,numericInput("for32",NULL,NULL)),column(4,textInput("state32",NULL,"deleted, negative kd value")),column(2,colourInput("col32",NULL,value = "#66CD00"))),
-                                                                                            fluidRow(column(2,numericInput("min33",NULL,97)),column(2,numericInput("max33",NULL,97)),column(2,numericInput("for33",NULL,NULL)),column(4,textInput("state33",NULL,"deleted, kd spike")),column(2,colourInput("col33",NULL,value = "#66CD00"))),
-                                                                                            fluidRow("marked grouping codes for marking sections of data which can then be recoded to another category or can have custom mathematical corrections applied to them"),
-                                                                                            fluidRow(column(2,numericInput("min21",NULL,81)),column(2,"+8"),column(6,"marked group 1 (marked to be deleted)"),column(2,colourInput("col21",NULL,value = "#d73027"))),
-                                                                                            fluidRow(column(4,"min +1"),column(2,"marked group 2"),column(2,textInput("state21",NULL,"marked group")),column(2,"2"),column(2,colourInput("col22",NULL,value = "#f46d43"))),
-                                                                                            fluidRow(column(4,"min +2"),column(4,"marked group 3"),column(2,"3"),column(2,colourInput("col23",NULL,value = "#fdae61"))),
-                                                                                            fluidRow(column(4,"min +3"),column(4,"marked group 4"),column(2,"4"),column(2,colourInput("col24",NULL,value = "#fee090"))),
-                                                                                            fluidRow(column(4,"min +4"),column(4,"marked group 5"),column(2,"5"),column(2,colourInput("col25",NULL,value = "#abd9e9"))),
-                                                                                            fluidRow(column(4,"min +5"),column(4,"marked group 6"),column(2,"6"),column(2,colourInput("col26",NULL,value = "#74add1"))),
-                                                                                            fluidRow(column(4,"min +6"),column(4,"marked group 7"),column(2,"7"),column(2,colourInput("col27",NULL,value = "#4575b4"))),
-                                                                                            fluidRow(column(4,"min +7"),column(4,"marked group 8"),column(2,"8"),column(2,colourInput("col28",NULL,value = "#542788"))),
-                                                                                            fluidRow(column(4,"min +8"),column(4,"marked group 9"),column(2,"9"),column(2,colourInput("col29",NULL,value = "#8073ac"))),
-                                                                                            fluidRow("Codes list for fully validated data. These will be the codes that will be present in the final exported dataset."),
-                                                                                            fluidRow(column(2,numericInput("min9",NULL,10)),column(2,numericInput("max9",NULL,19)),column(2,numericInput("for9",NULL,11)),column(2,"good"),column(2,textInput("state9",NULL,"good")),column(2,colourInput("col9",NULL,value = "#000000"))),
-                                                                                            fluidRow(column(2,numericInput("min10",NULL,20)),column(2,numericInput("max10",NULL,29)),column(2,numericInput("for10",NULL,21)),column(4,textInput("state10",NULL,"good calc")),column(2,colourInput("col10",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min11",NULL,30)),column(2,numericInput("max11",NULL,39)),column(2,numericInput("for11",NULL,31)),column(2,"estimate"),column(2,textInput("state11",NULL,"estimate")),column(2,colourInput("col11",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min12",NULL,40)),column(2,numericInput("max12",NULL,49)),column(2,numericInput("for12",NULL,41)),column(4,textInput("state12",NULL,"estimate calc")),column(2,colourInput("col12",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min13",NULL,60)),column(2,numericInput("max13",NULL,69)),column(2,numericInput("for13",NULL,61)),column(4,textInput("state13",NULL,"suspect")),column(2,colourInput("col13",NULL,value = "#ff0000"))),
-                                                                                            fluidRow(column(2,numericInput("min14",NULL,70)),column(2,numericInput("max14",NULL,79)),column(2,numericInput("for14",NULL,71)),column(4,textInput("state14",NULL,"suspect calc")),column(2,colourInput("col14",NULL,value = "#ff0000"))),
-                                                                                            fluidRow(column(2,numericInput("min16",NULL,255)),column(2,numericInput("max16",NULL,255)),column(2,numericInput("for16",NULL,255)),column(4,textInput("state16",NULL,"missing")),column(2,colourInput("col16",NULL,value = "#009acd"))),
-                                                                                            fluidRow("HIC work codes"),
-                                                                                            fluidRow(column(2,numericInput("min6",NULL,111)),column(2,numericInput("max6",NULL,111)),column(2,numericInput("for6",NULL,NULL)),column(4,textInput("state6",NULL,"HIC auto good")),column(2,colourInput("col6",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min7",NULL,116)),column(2,numericInput("max7",NULL,116)),column(2,numericInput("for7",NULL,NULL)),column(4,textInput("state7",NULL,"HIC auto interpolated")),column(2,colourInput("col7",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min8",NULL,110)),column(2,numericInput("max8",NULL,179)),column(2,numericInput("for8",NULL,NULL)),column(4,textInput("state8",NULL,"unchecked")),column(2,colourInput("col8",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min15",NULL,220)),column(2,numericInput("max15",NULL,224)),column(2,numericInput("for15",NULL,NULL)),column(4,textInput("state15",NULL,"unknown import")),column(2,colourInput("col15",NULL,value = "#009acd"))),
-                                                                                            fluidRow("Other HIC codes"),
-                                                                                            fluidRow(column(2,numericInput("min17",NULL,-1)),column(2,numericInput("max17",NULL,-1)),column(2,numericInput("for17",NULL,NULL)),column(4,textInput("state17",NULL,"missing")),column(2,colourInput("col17",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min18",NULL,6)),column(2,numericInput("max18",NULL,6)),column(2,numericInput("for18",NULL,NULL)),column(4,textInput("state18",NULL,"external good")),column(2,colourInput("col18",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min19",NULL,7)),column(2,numericInput("max19",NULL,7)),column(2,numericInput("for19",NULL,NULL)),column(4,textInput("state19",NULL,"external estimate")),column(2,colourInput("col19",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min20",NULL,8)),column(2,numericInput("max20",NULL,8)),column(2,numericInput("for20",NULL,NULL)),column(4,textInput("state20",NULL,"external suspect")),column(2,colourInput("col20",NULL,value = "#009acd"))),
-                                                                                            fluidRow("Custom codes"),
-                                                                                            fluidRow(column(2,numericInput("min34",NULL,-1000)),column(2,numericInput("max34",NULL,-1000)),column(2,numericInput("for34",NULL,NULL)),column(4,textInput("state34",NULL,"fill in custom state of value")),column(2,colourInput("col34",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min35",NULL,-1000)),column(2,numericInput("max35",NULL,-1000)),column(2,numericInput("for35",NULL,NULL)),column(4,textInput("state35",NULL,"fill in custom state of value")),column(2,colourInput("col35",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min36",NULL,-1000)),column(2,numericInput("max36",NULL,-1000)),column(2,numericInput("for36",NULL,NULL)),column(4,textInput("state36",NULL,"fill in custom state of value")),column(2,colourInput("col36",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min37",NULL,-1000)),column(2,numericInput("max37",NULL,-1000)),column(2,numericInput("for37",NULL,NULL)),column(4,textInput("state37",NULL,"fill in custom state of value")),column(2,colourInput("col37",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min38",NULL,-1000)),column(2,numericInput("max38",NULL,-1000)),column(2,numericInput("for38",NULL,NULL)),column(4,textInput("state38",NULL,"fill in custom state of value")),column(2,colourInput("col38",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min39",NULL,-1000)),column(2,numericInput("max39",NULL,-1000)),column(2,numericInput("for39",NULL,NULL)),column(4,textInput("state39",NULL,"fill in custom state of value")),column(2,colourInput("col39",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min40",NULL,-1000)),column(2,numericInput("max40",NULL,-1000)),column(2,numericInput("for40",NULL,NULL)),column(4,textInput("state40",NULL,"fill in custom state of value")),column(2,colourInput("col40",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min41",NULL,-1000)),column(2,numericInput("max41",NULL,-1000)),column(2,numericInput("for41",NULL,NULL)),column(4,textInput("state41",NULL,"fill in custom state of value")),column(2,colourInput("col41",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min42",NULL,-1000)),column(2,numericInput("max42",NULL,-1000)),column(2,numericInput("for42",NULL,NULL)),column(4,textInput("state42",NULL,"fill in custom state of value")),column(2,colourInput("col42",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min43",NULL,-1000)),column(2,numericInput("max43",NULL,-1000)),column(2,numericInput("for43",NULL,NULL)),column(4,textInput("state43",NULL,"fill in custom state of value")),column(2,colourInput("col43",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min44",NULL,-1000)),column(2,numericInput("max44",NULL,-1000)),column(2,numericInput("for44",NULL,NULL)),column(4,textInput("state44",NULL,"fill in custom state of value")),column(2,colourInput("col44",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min45",NULL,-1000)),column(2,numericInput("max45",NULL,-1000)),column(2,numericInput("for45",NULL,NULL)),column(4,textInput("state45",NULL,"fill in custom state of value")),column(2,colourInput("col45",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min46",NULL,-1000)),column(2,numericInput("max46",NULL,-1000)),column(2,numericInput("for46",NULL,NULL)),column(4,textInput("state46",NULL,"fill in custom state of value")),column(2,colourInput("col46",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min47",NULL,-1000)),column(2,numericInput("max47",NULL,-1000)),column(2,numericInput("for47",NULL,NULL)),column(4,textInput("state47",NULL,"fill in custom state of value")),column(2,colourInput("col47",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min48",NULL,-1000)),column(2,numericInput("max48",NULL,-1000)),column(2,numericInput("for48",NULL,NULL)),column(4,textInput("state48",NULL,"fill in custom state of value")),column(2,colourInput("col48",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,numericInput("min49",NULL,-1000)),column(2,numericInput("max49",NULL,-1000)),column(2,numericInput("for49",NULL,NULL)),column(4,textInput("state49",NULL,"fill in custom state of value")),column(2,colourInput("col49",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(2,""),column(4,""),column(4,textInput("stateOther",NULL,"other")),column(2,colourInput("colOther",NULL,value = "#009acd")))
-                                                                                   ),
-                                                                                   tabPanel("Other key features",
-                                                                                            fluidRow("Periodic data"),
-                                                                                            fluidRow("Continuous sensor maintenance data"),
-                                                                                            fluidRow(column(5,"factor level"),column(5,"color")),
-                                                                                            fluidRow(column(5,textInput("MaintFact1",NULL,value = "MPS Reiniging")),column(5,colourInput("Maintcol1",NULL,value = "#0bdee6"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact2",NULL,value = "MPS Ophaling")),column(5,colourInput("Maintcol2",NULL,value = "#eb4034"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact3",NULL,value = "MPS Plaatsing")),column(5,colourInput("Maintcol3",NULL,value = "#eb4034"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact4",NULL,value = "custom")),column(5,colourInput("Maintcol4",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact5",NULL,value = "custom")),column(5,colourInput("Maintcol5",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact6",NULL,value = "custom")),column(5,colourInput("Maintcol6",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact7",NULL,value = "custom")),column(5,colourInput("Maintcol7",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact8",NULL,value = "custom")),column(5,colourInput("Maintcol8",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact9",NULL,value = "custom")),column(5,colourInput("Maintcol9",NULL,value = "#009acd"))),
-                                                                                            fluidRow(column(5,textInput("MaintFact10",NULL,value = "custom")),column(5,colourInput("Maintcol10",NULL,value = "#009acd")))
-                                                                                   )
-                                                                       )
-                                                              )
-                                                  )
-                                         )
-
-                             )
                     ),
                     #tabPanel("Auto spike filtering"
 
                     #),
-                    tabPanel("Manual inspection",
+                    tabPanel("Step 2: Manual inspection",
+                             fluidRow(h5('Select all your suspect data, data to be deleted and data to be recalibrated/transformed')),
+                             hr(),
+                             fluidRow(h5('For record keeping, document all your decisions you make in a Word file or similar.
+                                         The displayed graph can be copy and pasted.')),
                              fluidRow(plotOutput("plot1", brush = brushOpts(
                                id = "plot_brush",
                                resetOnNew = TRUE),
                                dblclick = "plot_dblclick")
                              ),
-                             conditionalPanel(condition = 'input.PPFDdata',
-                                              fluidRow(plotOutput("plot4", brush = brushOpts(
-                                                id = "plot4_brush",
-                                                resetOnNew = TRUE),
-                                                dblclick = "plot4_dblclick")
-                                              ),
-                                              fluidRow(plotOutput("plot3", brush = brushOpts(
-                                                id = "plot3_brush",
-                                                resetOnNew = TRUE),
-                                                dblclick = "plot3_dblclick")
-                                              )),
+                             #conditionalPanel(condition = 'input.PPFDdata',
+                             #                 fluidRow(plotOutput("plot4", brush = brushOpts(
+                             #                   id = "plot4_brush",
+                             #                   resetOnNew = TRUE),
+                             #                   dblclick = "plot4_dblclick")
+                             #                 ),
+                             #                 fluidRow(plotOutput("plot3", brush = brushOpts(
+                             #                   id = "plot3_brush",
+                             #                   resetOnNew = TRUE),
+                             #                   dblclick = "plot3_dblclick")
+                             #                 )),
                              fluidRow('Draw box on graph and double click to zoom in to drawn box. Double click on graph to zoom out to full extent'),
                              fluidRow(splitLayout(
                                checkboxInput('lockxaxis','Lock x-axis', value = F),
@@ -248,39 +100,44 @@ HIC.App.manual <- function(){
                                actionButton('zoomout_toggle','zoom out 2x'),
                                tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))) #to fix issue with dropdown menus not working in split layout
                              )),
+                             fluidRow(splitLayout(checkboxInput('legend','add legend to graph',value = F),
+                                                  selectInput('legendlocal','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
+                             )),
+                             fluidRow(h4('tag points with box pulled on plot')),
+                             fluidRow(actionButton("suspect_toggle", "as suspect"),
+                                      actionButton("delete_toggle", "to be deleted"),
+                                      actionButton("good_toggle", "as good")),
                              hr(),
+                             fluidRow(splitLayout(
+                               (actionButton("marked_toggle", "marked for recalibration")),
+                               (selectInput("marked_tag", "marked grouping number", markedgroupnumbering[-1])))
+                             ),
+                             hr(),
+                             fluidRow(h4('save undo')),
                              fluidRow(
                                column(12,(actionButton("reset_toggle", "reset original data")),
                                       (actionButton("save_toggle", "save progress")),
                                       (actionButton("undo_toggle", "undo till last save")))
                              ),
-                             hr(),
-                             fluidRow(splitLayout(
-                               (actionButton("marked_toggle", "tag points as marked")),
-                               (selectInput("marked_tag", "marked grouping for later recalibration", markedgroupnumbering)))
+                             fluidRow(h4('reclassify tags')),
+                             fluidRow(column(10,"'Marked Grouping' --->>> 'Marked Grouping'")),
+                             fluidRow(splitLayout(actionButton("sts.reclass_toggle","Reclassify"),
+                                                  selectInput("sts1.sus_tag","from Group", c(2,3,4,5,6,7,8,9)),
+                                                  uiOutput("sts2.sus_list")
+                                                  #selectInput("sts2.sus_tag","to Group", markedgroupnumbering)
+                                                  )
                              ),
-                             hr(),
-                             fluidRow(actionButton("good_toggle", "tag points as good")),
-                             hr(),
                              fluidRow(splitLayout(
                                actionButton("ctc.Brush.reclass_toggl", "Reclass points within brush"),
-                               numericInput("brushfrom","from state of value",NULL),
-                               numericInput("brushto","to state of value",NULL)
+                               uiOutput("brushfrom_list"),
+                               #numericInput("brushfrom","from state of value",NULL),
+                               uiOutput("brushto_list")
+                               #numericInput("brushto","to state of value",NULL)
                              )),
-                             hr(),
-                             fluidRow(h5("!!!Interpolate as your last step before exporting!!! Gaps interpolated during the manual check get labeled as estimate. If you don't do this as the final step you may accidentally overwrite the estimate label.")),
-                             tags$head(tags$style('h5 {color:red}')), #colors all heading 5 texts as red
-                             fluidRow(
-                               column(4,actionButton("interpolate_toggle","interpolate gaps"),actionButton("interpolateBrush_toggle", "interpolate gaps in brushed box"),),
-                               column(6,numericInput("maxgap_interpolate","max time gap of interpolation in minutes",60))
-                             ),
                              fluidRow(h2('Graphing preferences')),
                              fluidRow(
                                checkboxInput('AxisIsUNIXsec','Convert x-axis seconds to datetime',value = T),
                              ),
-                             fluidRow(splitLayout(checkboxInput('legend','add legend to graph',value = F),
-                                                  selectInput('legendlocal','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
-                             )),
                              fluidRow(splitLayout(
                                numericInput("pointsize","Point Size",1),
                                checkboxInput("periodic_check", "Periodic Data",value = T),
@@ -291,7 +148,38 @@ HIC.App.manual <- function(){
                              p(),
                              fluidRow(verbatimTextOutput("info"))
                     ),
-                    tabPanel("Correlation and calibration",
+                    tabPanel('Step 3: Document full dataset',
+                             fluidRow(h5('Copy and paste this graph into the word document')),
+                             plotOutput("plotMainFull"),
+                             fluidRow(splitLayout(checkboxInput('legendFull','add legend to graph',value = T),
+                                                  selectInput('legendlocalFull','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
+                             ))
+                    ),
+                    tabPanel('Step 4: Document correlation',
+                             fluidRow(h5('Copy and paste this graph into the word document')),
+                             plotOutput("plotCorFull"),
+                             fluidRow(splitLayout(checkboxInput('legend2Full','add legend to graph',value = T),
+                                                  selectInput('legendlocal2Full','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
+                             ))
+                    ),
+                    tabPanel('Step 5: Calibrate Chlorophyll a ',
+                             conditionalPanel(condition = 'output.ischla',
+                                              fluidRow(h5('Chlorophyll data must be calibrated with the lab sampled periodic data using no y-intercept.')),
+                                              fluidRow(strong('The calibration formulas will be based on all non-marked data that is not labeled as "suspect" or "suspect calc". However when you click the button "calibrate points" the points labeled "suspect" and "suspect calc" will still be calibrated.')),
+                                              verbatimTextOutput("formulaNoInt_chla"),
+                                              actionButton("cal.nonsus_toggle_chla","Auto calibrate chlorophyll data"),
+                                              tags$head(tags$style(HTML('#cal.nonsus_toggle_chla{background-color:orange}')))
+                             ),
+
+                             conditionalPanel(condition = '!output.ischla',
+                                              'Not Chlorophyll data. No action needed'
+                             )
+                    ),
+
+                    tabPanel("Step 6: Transform/recalibrate specially marked areas",
+                             fluidRow(h5('If you have any data that needs to be specially transformed/recalibrated, then it should have been marked in step 2. You can select the marked group you wish to transform and use the below tools to do so.')),
+                             fluidRow(h5('Switch back and forth between this step and step 2 to see your data which you are transforming')),
+                             fluidRow('Draw box on graph and double click to zoom in to drawn box. Double click on graph to zoom out to full extent'),
                              plotOutput("plot2", brush = brushOpts(
                                id = "plot2_brush",
                                resetOnNew = TRUE),
@@ -313,32 +201,66 @@ HIC.App.manual <- function(){
                              actionButton("cal.manual_toggle", "Manual calibrate points"),
                              tableOutput("CorTable")
                     ),
-                    tabPanel("Reclassifying state of value codes",
-                             fluidRow(column(10,"'Marked Grouping' --->>> 'Marked Grouping'")),
-                             fluidRow(splitLayout(actionButton("sts.reclass_toggle","Reclassify"),
-                                                  selectInput("sts1.sus_tag","from Group", c(1,2,3,4,5,6,7,8,9)),
-                                                  selectInput("sts2.sus_tag","to Group", c(1,2,3,4,5,6,7,8,9)))
-                             ),
+                    tabPanel('Step 7: document final full dataset and transformations',
+                             fluidRow(h5('Copy and paste this graph and the below table of your transformations into the word document')),
+                             plotOutput("plotMainFull2"),
+                             fluidRow(splitLayout(checkboxInput('legendFull2','add legend to graph',value = T),
+                                                  selectInput('legendlocalFull2','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
+                             )),
+                             tableOutput("transformation.table")
+                    ),
+                    tabPanel("Step 8: Reclassifying state of value codes",
+                             fluidRow(h5('All the marked groupings need to be assigned a state of value. If they were transformed, then they need to be labeled as "estimate" or "suspect".
+                                         See the talbe at the bottom of this page to see which marked groups are still in the dataset and still need to be assigned a state of value.')),
                              fluidRow(column(10,"'Marked Grouping' --->>> Non-work-class state of value")),
                              fluidRow(splitLayout(actionButton("sto.reclass_toggle","Reclassify"),
-                                                  selectInput("sto.sus_tag","Marked Group", c(1,2,3,4,5,6,7,8,9)),
+                                                  selectInput("sto.sus_tag","Marked Group", c(2,3,4,5,6,7,8,9)),
                                                   uiOutput("sto.state.class"),
                                                   verbatimTextOutput("sto.code"))
                              ),
+                             fluidRow(h5('Delete all the points that you marked to be deleted.')),
                              fluidRow(column(10,"'Marked Grouping' --->>> 'Manual Delete'")),
-                             fluidRow(splitLayout(actionButton("s.delete_toggle","Delete"),
-                                                  selectInput("s.delete.sus_tag","from Group", c(1,2,3,4,5,6,7,8,9))),
-                             ),
-                             fluidRow(column(10,"Custom state of value --->>> Custom state of value")),
-                             fluidRow(splitLayout(actionButton("ctc.reclass_toggle","Reclassify"),
-                                                  numericInput("ct","from class code",NULL),
-                                                  numericInput("tc","to class code",NULL))
-                             ),
+                             fluidRow(splitLayout(actionButton("s.delete_toggle","Delete"))),
+                             fluidRow(h5('All the rest of the points that aren`t labeled as "suspect" or "estimate" yet can be labeled as "good"')),
                              fluidRow(column(10,"All work-classes except 'Marked Groupings' --->>> 'Good' state of value")),
                              fluidRow(column(2,actionButton("wtg.reclass_toggle","Reclassify"))),
+
+                             tabsetPanel(type = 'pills',
+                                         tabPanel('hide'),
+                                         tabPanel('show advanced tools',
+                                                  fluidRow(column(10,"Custom state of value --->>> Custom state of value")),
+                                                  fluidRow(splitLayout(actionButton("ctc.reclass_toggle","Reclassify"),
+                                                                       numericInput("ct","from class code",NULL),
+                                                                       numericInput("tc","to class code",NULL))
+                                                  )
+                                         )
+                             ),
+
+
                              fluidRow(tableOutput("StateOfValueTable"))
                     ),
-                    tabPanel("Export",
+                    tabPanel('Step 9: Gap interpolation',
+                             fluidRow(h5("As the last step all the gaps of one hour or less shall be interpolated.
+                                         !!!Interpolate as your last step before exporting!!! Gaps interpolated during the manual check get labeled as estimate. If you don't do this as the final step you may accidentally overwrite the estimate label.")),
+                             tags$head(tags$style('h5 {color:red}')), #colors all heading 5 texts as red
+                             fluidRow(
+                               column(4,actionButton("interpolate_toggle","interpolate gaps"),actionButton("interpolateBrush_toggle", "interpolate gaps in brushed box on graph in step 2"),),
+                               column(6,numericInput("maxgap_interpolate","max time gap of interpolation in minutes",60))
+                             ),
+                             tags$head(tags$style(HTML('#interpolate_toggle{background-color:orange}'))),
+
+                    ),
+                    tabPanel('Step 10: document final full dataset with final state of values',
+                             fluidRow(h5('Copy and paste this graph into the word document')),
+                             plotOutput("plotMainFull3"),
+                             fluidRow(splitLayout(checkboxInput('legendFull3','add legend to graph',value = T),
+                                                  selectInput('legendlocalFull3','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
+                             ))
+                    ),
+                    tabPanel("Step 11: Export",
+                             fluidRow(h5('Export the data. It will be saved into the working directory. You can see your working directory below.')),
+                             fluidRow(actionButton("export_con_toggle", "Click to Export Continuous Data csv, Continuous Data zrx, Correlation Table and Work Log")),
+                             tags$head(tags$style(HTML('#export_con_toggle{background-color:orange}'))),
                              fluidRow(
                                "Working Directory",
                                verbatimTextOutput("workingDirectory1")
@@ -362,9 +284,8 @@ HIC.App.manual <- function(){
                                "Export Continuous Data Table",
                                textInput("subDirectory_con","Sub directory to save data table into","CleanedDataSet"),
                                textInput("Note_con","Note to add to start of file name","ContinuousData_"),
-                               actionButton("export_con_toggle", "Click to Export Continuous Data csv, Continuous Data zrx, Correlation Table and Work Log"),
-                               checkboxInput("deleteworklog","delete work log upon export", value = T),
-                               tags$head(tags$style(HTML('#export_con_toggle{background-color:orange}')))
+                               checkboxInput("deleteworklog","delete work log upon export", value = T)
+
                              )
 
 
@@ -381,6 +302,156 @@ HIC.App.manual <- function(){
                              fluidRow(h4('Your working directory')),
                              fluidRow(verbatimTextOutput("workingdirectory2")),
                              htmlOutput("inc1"),
+                    ),
+                    tabPanel("Options",
+                             tabsetPanel(type="tabs",
+                                         tabPanel("Continuous data file",
+                                                  textInput("Contsep","csv file column separator",","),
+                                                  textInput("Contdec","csv file decimal indicator","."),
+                                                  textInput("tContcol","Cont continuous UNIX time column","dspk.DateTimeNum"),
+                                                  textInput("timezone","Time zone (GMT+1 = Etc/GMT-1)","Etc/GMT-1"),
+                                                  textInput("valcol","Continuous Variable column","dspk.Values"),
+                                                  textInput("statecol","State of value column","dspk.StateOfValue"),
+                                                  textInput("StNamContcol","Station name column for continuous dataset","Station.Name"),
+                                                  textInput("StNoContcol","Sation number column for continuous dataset","Station.Number"),
+                                                  textInput("parContcol","Parameter name column for continuous dataset","Parameter.Name"),
+                                                  textInput("parUnitContcol","Parameter unit column for continuous dataset","Parameter.Unit"),
+
+
+                                                  textInput("par1Cont","Parameter 1 name in continuous dataset","DO"),
+                                                  textInput("par2Cont","Parameter 2 name in continuous dataset","Chfyla"),
+                                                  textInput("par3Cont","Parameter 3 name in continuous dataset","pH"),
+                                                  textInput("par4Cont","Parameter 4 name in continuous dataset","PPFD1"),
+                                                  textInput("par5Cont","Parameter 5 name in continuous dataset",""),
+                                                  textInput("par6Cont","Parameter 6 name in continuous dataset",""),
+                                                  textInput("par7Cont","Parameter 7 name in continuous dataset",""),
+                                                  textInput("par8Cont","Parameter 8 name in continuous dataset",""),
+                                                  textInput("par9Cont","Parameter 9 name in continuous dataset",""),
+                                                  textInput("par10Cont","Parameter 10 name in continuous dataset","")),
+
+                                         tabPanel("Periodic data file",
+                                                  textInput("Perisep","csv file column separator",";"),
+                                                  textInput("Peridec","csv file decimal indicator","."),
+                                                  textInput("tPericol","Peri periodic time column","ReadingDate"),
+                                                  textInput("StNamPericol","Station name column for periodic dataset","StationName"),
+                                                  textInput("PeriParamcol","Column name for parameter","ParameterName"),
+                                                  textInput('PeriValuecol',"Column name for values","ReadingValue"),
+                                                  textInput("par1Pericol","Parameter 1 for periodic dataset","Oxygen"),
+                                                  textInput("par2Pericol","Parameter 2 for periodic dataset","Chlorophyll a"),
+                                                  textInput("par3Pericol","Parameter 3 for periodic dataset","pH"),
+                                                  textInput("par4Pericol","Parameter 4 for periodic dataset","light attenuation coefficient"),
+                                                  textInput("par5Pericol","Parameter 5 for periodic dataset",NULL),
+                                                  textInput("par6Pericol","Parameter 6 for periodic dataset",NULL),
+                                                  textInput("par7Pericol","Parameter 7 for periodic dataset",NULL),
+                                                  textInput("par8Pericol","Parameter 8 for periodic dataset",NULL),
+                                                  textInput("par9Pericol","Parameter 9 for periodic dataset",NULL),
+                                                  textInput("par10Pericol","Parameter 10 for periodic dataset",NULL),
+                                         ),
+                                         tabPanel("Maintenance data file",
+                                                  textInput("Maintsep","csv file column separator",","),
+                                                  textInput("Maintdec","csv file decimal indicator","."),
+                                                  textInput("tMaintcol","Maintenance UNIX time column","DateTimeUNIX"),
+                                                  textInput("diviceMaintcol","Divice column in maintenance records","Toestel"),
+                                                  textInput("actionMaintcol","Action type column in maintenance records","Staaltype")
+                                         ),
+                                         tabPanel("PPFD data",
+                                                  numericInput('DistSensors','PPFD sensor pair distance in meters',0.4),
+                                                  numericInput('kddlupper','Light attenuation coefficient kd detection limit upper sensor',1),
+                                                  numericInput('kddllower','Light attenuation coefficient kd detection limit upper sensor',0.25),
+                                                  textInput("kdparname","Light attenuation coefficient parameter name",'kd'),
+                                                  textInput("PPFDUname","PPFD upper sensor parameter name","PPFD1"),
+                                                  textInput("PPFDLname","PPFD lower sensor parameter name","PPFD")
+                                         ),
+                                         tabPanel("Graph",
+                                                  tabsetPanel(type = "tabs",
+                                                              tabPanel("State of Value Continuous",
+                                                                       fluidRow(
+                                                                         column(6,"state of value num codes"),
+                                                                         column(6,"Graphing preferences")
+                                                                       ),
+                                                                       fluidRow(
+                                                                         column(2,"min"),
+                                                                         column(2,"max"),
+                                                                         column(2,"format"),
+                                                                         column(4,"name"),
+                                                                         column(2,"color")
+                                                                       ),
+                                                                       fluidRow("Validation work codes"),
+                                                                       fluidRow(column(2,numericInput("min1",NULL,80)),column(2,numericInput("max1",NULL,80)),column(2,numericInput("for1",NULL,NULL)),column(2,"auto good"),column(2,textInput("state1",NULL,"auto good")),column(2,colourInput("col1",NULL,value = "#696969"))),
+                                                                       fluidRow(column(2,numericInput("min2",NULL,91)),column(2,numericInput("max2",NULL,91)),column(2,numericInput("for2",NULL,NULL)),column(2,"min max filter deleted"),column(2,textInput("state2",NULL,"min max filter deleted")),column(2,colourInput("col2",NULL,value = "#e9967a"))),
+                                                                       fluidRow(column(2,numericInput("min3",NULL,92)),column(2,numericInput("max3",NULL,92)),column(2,numericInput("for3",NULL,NULL)),column(2,"spike filter deleted"),column(2,textInput("state3",NULL,"spike filter deleted")),column(2,colourInput("col3",NULL,value = "#ee1289"))),
+                                                                       fluidRow(column(2,numericInput("min4",NULL,93)),column(2,numericInput("max4",NULL,93)),column(2,numericInput("for4",NULL,NULL)),column(2,"manual interpolated"),column(2,textInput("state4",NULL,"manual interpolated")),column(2,colourInput("col4",NULL,value = "#66cd00"))),
+                                                                       fluidRow(column(2,numericInput("min5",NULL,99)),column(2,numericInput("max5",NULL,99)),column(2,numericInput("for5",NULL,99)),column(2,"manual delete"),column(2,textInput("state5",NULL,"manual delete")),column(2,colourInput("col5",NULL,value = "#009acd"))),
+                                                                       fluidRow("PPFD despiking specific codes"),
+                                                                       fluidRow(column(2,numericInput("min30",NULL,94)),column(2,numericInput("max30",NULL,94)),column(2,numericInput("for30",NULL,NULL)),column(4,textInput("state30",NULL,"deleted, deleted in other sensor")),column(2,colourInput("col30",NULL,value = "#66CD00"))),
+                                                                       fluidRow(column(2,numericInput("min31",NULL,95)),column(2,numericInput("max31",NULL,95)),column(2,numericInput("for31",NULL,NULL)),column(4,textInput("state31",NULL,"not deleted, spike in both sensors")),column(2,colourInput("col31",NULL,value = "#8D00CF"))),
+                                                                       fluidRow(column(2,numericInput("min32",NULL,96)),column(2,numericInput("max32",NULL,96)),column(2,numericInput("for32",NULL,NULL)),column(4,textInput("state32",NULL,"deleted, negative kd value")),column(2,colourInput("col32",NULL,value = "#66CD00"))),
+                                                                       fluidRow(column(2,numericInput("min33",NULL,97)),column(2,numericInput("max33",NULL,97)),column(2,numericInput("for33",NULL,NULL)),column(4,textInput("state33",NULL,"deleted, kd spike")),column(2,colourInput("col33",NULL,value = "#66CD00"))),
+                                                                       fluidRow("marked grouping codes for marking sections of data which can then be recoded to another category or can have custom mathematical corrections applied to them"),
+                                                                       fluidRow(column(2,numericInput("min21",NULL,81)),column(2,"+8"),column(6,"marked group 1 (marked to be deleted)"),column(2,colourInput("col21",NULL,value = "#d73027"))),
+                                                                       fluidRow(column(4,"min +1"),column(2,"marked group 2"),column(2,textInput("state21",NULL,"marked group")),column(2,"2"),column(2,colourInput("col22",NULL,value = "#f46d43"))),
+                                                                       fluidRow(column(4,"min +2"),column(4,"marked group 3"),column(2,"3"),column(2,colourInput("col23",NULL,value = "#fdae61"))),
+                                                                       fluidRow(column(4,"min +3"),column(4,"marked group 4"),column(2,"4"),column(2,colourInput("col24",NULL,value = "#fee090"))),
+                                                                       fluidRow(column(4,"min +4"),column(4,"marked group 5"),column(2,"5"),column(2,colourInput("col25",NULL,value = "#abd9e9"))),
+                                                                       fluidRow(column(4,"min +5"),column(4,"marked group 6"),column(2,"6"),column(2,colourInput("col26",NULL,value = "#74add1"))),
+                                                                       fluidRow(column(4,"min +6"),column(4,"marked group 7"),column(2,"7"),column(2,colourInput("col27",NULL,value = "#4575b4"))),
+                                                                       fluidRow(column(4,"min +7"),column(4,"marked group 8"),column(2,"8"),column(2,colourInput("col28",NULL,value = "#542788"))),
+                                                                       fluidRow(column(4,"min +8"),column(4,"marked group 9"),column(2,"9"),column(2,colourInput("col29",NULL,value = "#8073ac"))),
+                                                                       fluidRow("Codes list for fully validated data. These will be the codes that will be present in the final exported dataset."),
+                                                                       fluidRow(column(2,numericInput("min9",NULL,10)),column(2,numericInput("max9",NULL,19)),column(2,numericInput("for9",NULL,11)),column(2,"good"),column(2,textInput("state9",NULL,"good")),column(2,colourInput("col9",NULL,value = "#000000"))),
+                                                                       fluidRow(column(2,numericInput("min10",NULL,20)),column(2,numericInput("max10",NULL,29)),column(2,numericInput("for10",NULL,21)),column(4,textInput("state10",NULL,"good calc")),column(2,colourInput("col10",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min11",NULL,30)),column(2,numericInput("max11",NULL,39)),column(2,numericInput("for11",NULL,31)),column(2,"estimate"),column(2,textInput("state11",NULL,"estimate")),column(2,colourInput("col11",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min12",NULL,40)),column(2,numericInput("max12",NULL,49)),column(2,numericInput("for12",NULL,41)),column(4,textInput("state12",NULL,"estimate calc")),column(2,colourInput("col12",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min13",NULL,60)),column(2,numericInput("max13",NULL,69)),column(2,numericInput("for13",NULL,61)),column(4,textInput("state13",NULL,"suspect")),column(2,colourInput("col13",NULL,value = "#ff0000"))),
+                                                                       fluidRow(column(2,numericInput("min14",NULL,70)),column(2,numericInput("max14",NULL,79)),column(2,numericInput("for14",NULL,71)),column(4,textInput("state14",NULL,"suspect calc")),column(2,colourInput("col14",NULL,value = "#ff0000"))),
+                                                                       fluidRow(column(2,numericInput("min16",NULL,255)),column(2,numericInput("max16",NULL,255)),column(2,numericInput("for16",NULL,255)),column(4,textInput("state16",NULL,"missing")),column(2,colourInput("col16",NULL,value = "#009acd"))),
+                                                                       fluidRow("HIC work codes"),
+                                                                       fluidRow(column(2,numericInput("min6",NULL,111)),column(2,numericInput("max6",NULL,111)),column(2,numericInput("for6",NULL,NULL)),column(4,textInput("state6",NULL,"HIC auto good")),column(2,colourInput("col6",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min7",NULL,116)),column(2,numericInput("max7",NULL,116)),column(2,numericInput("for7",NULL,NULL)),column(4,textInput("state7",NULL,"HIC auto interpolated")),column(2,colourInput("col7",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min8",NULL,110)),column(2,numericInput("max8",NULL,179)),column(2,numericInput("for8",NULL,NULL)),column(4,textInput("state8",NULL,"unchecked")),column(2,colourInput("col8",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min15",NULL,220)),column(2,numericInput("max15",NULL,224)),column(2,numericInput("for15",NULL,NULL)),column(4,textInput("state15",NULL,"unknown import")),column(2,colourInput("col15",NULL,value = "#009acd"))),
+                                                                       fluidRow("Other HIC codes"),
+                                                                       fluidRow(column(2,numericInput("min17",NULL,-1)),column(2,numericInput("max17",NULL,-1)),column(2,numericInput("for17",NULL,NULL)),column(4,textInput("state17",NULL,"missing")),column(2,colourInput("col17",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min18",NULL,6)),column(2,numericInput("max18",NULL,6)),column(2,numericInput("for18",NULL,NULL)),column(4,textInput("state18",NULL,"external good")),column(2,colourInput("col18",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min19",NULL,7)),column(2,numericInput("max19",NULL,7)),column(2,numericInput("for19",NULL,NULL)),column(4,textInput("state19",NULL,"external estimate")),column(2,colourInput("col19",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min20",NULL,8)),column(2,numericInput("max20",NULL,8)),column(2,numericInput("for20",NULL,NULL)),column(4,textInput("state20",NULL,"external suspect")),column(2,colourInput("col20",NULL,value = "#009acd"))),
+                                                                       fluidRow("Custom codes"),
+                                                                       fluidRow(column(2,numericInput("min34",NULL,-1000)),column(2,numericInput("max34",NULL,-1000)),column(2,numericInput("for34",NULL,NULL)),column(4,textInput("state34",NULL,"fill in custom state of value")),column(2,colourInput("col34",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min35",NULL,-1000)),column(2,numericInput("max35",NULL,-1000)),column(2,numericInput("for35",NULL,NULL)),column(4,textInput("state35",NULL,"fill in custom state of value")),column(2,colourInput("col35",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min36",NULL,-1000)),column(2,numericInput("max36",NULL,-1000)),column(2,numericInput("for36",NULL,NULL)),column(4,textInput("state36",NULL,"fill in custom state of value")),column(2,colourInput("col36",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min37",NULL,-1000)),column(2,numericInput("max37",NULL,-1000)),column(2,numericInput("for37",NULL,NULL)),column(4,textInput("state37",NULL,"fill in custom state of value")),column(2,colourInput("col37",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min38",NULL,-1000)),column(2,numericInput("max38",NULL,-1000)),column(2,numericInput("for38",NULL,NULL)),column(4,textInput("state38",NULL,"fill in custom state of value")),column(2,colourInput("col38",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min39",NULL,-1000)),column(2,numericInput("max39",NULL,-1000)),column(2,numericInput("for39",NULL,NULL)),column(4,textInput("state39",NULL,"fill in custom state of value")),column(2,colourInput("col39",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min40",NULL,-1000)),column(2,numericInput("max40",NULL,-1000)),column(2,numericInput("for40",NULL,NULL)),column(4,textInput("state40",NULL,"fill in custom state of value")),column(2,colourInput("col40",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min41",NULL,-1000)),column(2,numericInput("max41",NULL,-1000)),column(2,numericInput("for41",NULL,NULL)),column(4,textInput("state41",NULL,"fill in custom state of value")),column(2,colourInput("col41",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min42",NULL,-1000)),column(2,numericInput("max42",NULL,-1000)),column(2,numericInput("for42",NULL,NULL)),column(4,textInput("state42",NULL,"fill in custom state of value")),column(2,colourInput("col42",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min43",NULL,-1000)),column(2,numericInput("max43",NULL,-1000)),column(2,numericInput("for43",NULL,NULL)),column(4,textInput("state43",NULL,"fill in custom state of value")),column(2,colourInput("col43",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min44",NULL,-1000)),column(2,numericInput("max44",NULL,-1000)),column(2,numericInput("for44",NULL,NULL)),column(4,textInput("state44",NULL,"fill in custom state of value")),column(2,colourInput("col44",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min45",NULL,-1000)),column(2,numericInput("max45",NULL,-1000)),column(2,numericInput("for45",NULL,NULL)),column(4,textInput("state45",NULL,"fill in custom state of value")),column(2,colourInput("col45",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min46",NULL,-1000)),column(2,numericInput("max46",NULL,-1000)),column(2,numericInput("for46",NULL,NULL)),column(4,textInput("state46",NULL,"fill in custom state of value")),column(2,colourInput("col46",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min47",NULL,-1000)),column(2,numericInput("max47",NULL,-1000)),column(2,numericInput("for47",NULL,NULL)),column(4,textInput("state47",NULL,"fill in custom state of value")),column(2,colourInput("col47",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min48",NULL,-1000)),column(2,numericInput("max48",NULL,-1000)),column(2,numericInput("for48",NULL,NULL)),column(4,textInput("state48",NULL,"fill in custom state of value")),column(2,colourInput("col48",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,numericInput("min49",NULL,-1000)),column(2,numericInput("max49",NULL,-1000)),column(2,numericInput("for49",NULL,NULL)),column(4,textInput("state49",NULL,"fill in custom state of value")),column(2,colourInput("col49",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(2,""),column(4,""),column(4,textInput("stateOther",NULL,"other")),column(2,colourInput("colOther",NULL,value = "#009acd")))
+                                                              ),
+                                                              tabPanel("Other key features",
+                                                                       fluidRow("Periodic data"),
+                                                                       fluidRow("Continuous sensor maintenance data"),
+                                                                       fluidRow(column(5,"factor level"),column(5,"color")),
+                                                                       fluidRow(column(5,textInput("MaintFact1",NULL,value = "MPS Reiniging")),column(5,colourInput("Maintcol1",NULL,value = "#0bdee6"))),
+                                                                       fluidRow(column(5,textInput("MaintFact2",NULL,value = "MPS Ophaling")),column(5,colourInput("Maintcol2",NULL,value = "#eb4034"))),
+                                                                       fluidRow(column(5,textInput("MaintFact3",NULL,value = "MPS Plaatsing")),column(5,colourInput("Maintcol3",NULL,value = "#eb4034"))),
+                                                                       fluidRow(column(5,textInput("MaintFact4",NULL,value = "custom")),column(5,colourInput("Maintcol4",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(5,textInput("MaintFact5",NULL,value = "custom")),column(5,colourInput("Maintcol5",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(5,textInput("MaintFact6",NULL,value = "custom")),column(5,colourInput("Maintcol6",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(5,textInput("MaintFact7",NULL,value = "custom")),column(5,colourInput("Maintcol7",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(5,textInput("MaintFact8",NULL,value = "custom")),column(5,colourInput("Maintcol8",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(5,textInput("MaintFact9",NULL,value = "custom")),column(5,colourInput("Maintcol9",NULL,value = "#009acd"))),
+                                                                       fluidRow(column(5,textInput("MaintFact10",NULL,value = "custom")),column(5,colourInput("Maintcol10",NULL,value = "#009acd")))
+                                                              )
+                                                  )
+                                         )
+                             )
                     )
 
 
@@ -416,10 +487,12 @@ HIC.App.manual <- function(){
 
       #Work log table------------------------------------------------------------------------------
       work <- reactiveValues(
-        log = "GUI Started"
+        log = "GUI Started",
+        trans = NULL
       )
 
       output$worklog.table <- renderTable(work$log)
+      output$transformation.table <- renderTable(ifelse(length(work$trans)>0,work$trans,'No transformations were made'))
 
       observeEvent(input$clear.worklog_toggle,{
         work$log = "Work log cleared"})
@@ -1158,7 +1231,7 @@ HIC.App.manual <- function(){
 
 
 
-      #make plot continuous values
+      #make plot continuous values--------------
 
       #variable for storing zoom extent coordinates
       ranges <- reactiveValues(x = NULL, y = NULL, y3=NULL, y4=NULL)
@@ -1177,7 +1250,7 @@ HIC.App.manual <- function(){
       }
 
 
-      Build_plot1 <- function(){
+      Build_PlotMain <- function(legend,legendlocal, xrange, yrange, fullextent = F){
         if(is.null(vals$tCont)){
           plot.new()
           title('no data')
@@ -1197,8 +1270,12 @@ HIC.App.manual <- function(){
           nState <- length(Statelevels)
 
           # get the range for the x and y axis
-          xrange <- ranges$x
-          yrange <- ranges$y
+          #xrange <- ranges$x
+          #yrange <- ranges$y
+          if(fullextent){ #set to full extent if asked for
+            xrange <- range(vals$tCont, na.rm = T, finite = T)
+            yrange <- range( vals$valCont, na.rm = T, finite = T)
+          }
 
           # set up the plot
           #setup x-axis
@@ -1251,18 +1328,18 @@ HIC.App.manual <- function(){
           for (i in 2:nState){
             cols <- c(cols,Colors[Statelevels[i]])
           }
-          if((input$legend)){
+          if((legend)){
             maincheck <- F
             if(input$maint_check){
               if(nactionMaint!=0){maincheck <- T}
             }
             if(!maincheck){
-              legend((input$legendlocal),legend = Statelevels, cex=0.8, col=cols,
+              legend((legendlocal),legend = Statelevels, cex=0.8, col=cols,
                      pch=16, title='State of value')
             }else{
               linetypes <- c(rep(0,length(Statelevels)),1,1)
               pointtypes <- c(rep(16,length(Statelevels)),NA,NA)
-              legend((input$legendlocal),legend = c(Statelevels,'sensor cleaning','sensor replacment'), cex=0.8, col=c(cols,'blue','red'),
+              legend((legendlocal),legend = c(Statelevels,'sensor cleaning','sensor replacment'), cex=0.8, col=c(cols,input$Maintcol1,input$Maintcol2),
                      pch=pointtypes, lty =linetypes,  title='State of value')
             }
           }
@@ -1270,7 +1347,17 @@ HIC.App.manual <- function(){
         }
       }
       output$plot1 <- renderPlot({
-        Build_plot1()
+        Build_PlotMain(input$legend,input$legendlocal,ranges$x,ranges$y)
+      })
+
+      output$plotMainFull <- renderPlot({
+        Build_PlotMain(input$legendFull,input$legendlocalFull,ranges$x,ranges$y, fullextent = T)
+      })
+      output$plotMainFull2 <- renderPlot({
+        Build_PlotMain(input$legendFull2,input$legendlocalFull2,ranges$x,ranges$y, fullextent = T)
+      })
+      output$plotMainFull3 <- renderPlot({
+        Build_PlotMain(input$legendFull3,input$legendlocalFull3,ranges$x,ranges$y, fullextent = T)
       })
 
       output$plot3 <- renderPlot({
@@ -1450,7 +1537,7 @@ HIC.App.manual <- function(){
 
 
 
-      #make plot correlation graph
+      #make plot correlation graph--------------
 
       #variable for storing zoom extent coordinates
       ranges2 <- reactiveValues(x = NULL, y = NULL)
@@ -1476,8 +1563,7 @@ HIC.App.manual <- function(){
       }
 
 
-      output$plot2 <- renderPlot({
-
+      makeCorPlot <- function(xrange,yrange,legend2,legendlocal2,fullextent = F){
         tryCatch({
           #setting State of values
           State <- State(cortab()$state)
@@ -1493,8 +1579,10 @@ HIC.App.manual <- function(){
           nState <- length(Statelevels)
 
           # get the range for the x and y axis
-          xrange <- ranges2$x
-          yrange <- ranges2$y
+          if(fullextent){
+            yrange <- try(range(cortab()$valPeri, na.rm = T, finite = T),silent = T)
+            xrange <- try(range(cortab()$valCont, na.rm = T, finite = T),silent = T)
+          }
 
           # set up the plot
           #setup x-axis
@@ -1517,20 +1605,24 @@ HIC.App.manual <- function(){
                   col=Colors[Statelevels[i]])
           }
 
-          #add corelation point IDs
+          #add correlation point IDs
           try(text(x=cortab()$valCont, y=cortab()$valPeri, labels = cortab()$corID, col = 'white'),silent = T)
 
           # add a title and subtitle
-          title(main = paste(valsPeri$StNamPeri[1],"vs",vals$StNoCont),
-                sub = paste('Regression line for',ifelse(input$calgroup==0,'non-marked data points',paste('marked group',input$calgroup)),ifelse(input$cal.nonsus_check,'with no y-intercept','')))
+          title(main = paste(vals$parCont,valsPeri$StNamPeri[1],"vs",vals$StNoCont),
+                sub = tryCatch({paste('Regression line for',ifelse(input$calgroup==0,'non-marked data points',paste('marked group',input$calgroup)),':',
+                                      ifelse(input$cal.nonsus_check,lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn,
+                                             lm_eqn(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn))},
+                         error=function(e){return("")})
+          )
 
           # add a legend
           cols <- Colors[Statelevels[1]]
           for (i in 2:nState){
             cols <- c(cols,Colors[Statelevels[i]])
           }
-          if((input$legend2)){
-            legend((input$legendlocal2),legend = Statelevels, cex=0.8, col=cols,
+          if((legend2)){
+            legend((legendlocal2),legend = Statelevels, cex=0.8, col=cols,
                    pch=16, title='State of value')
           }
         },
@@ -1540,7 +1632,11 @@ HIC.App.manual <- function(){
           title('no reference data to make calibration graph. Check that the selected marked group is present in your data.')
         }
         )
-      })
+      }
+      output$plot2 <- renderPlot({makeCorPlot(ranges2$x,ranges2$y,input$legend2,input$legendlocal2)})
+
+
+      output$plotCorFull <- renderPlot({makeCorPlot(ranges2$x,ranges2$y,input$legend2Full,input$legendlocal2Full,fullextent = T)})
 
       # When a double-click happens, check if there's a brush on the plot.
       # If so, zoom to the brush bounds; if not, reset the zoom.
@@ -1562,6 +1658,14 @@ HIC.App.manual <- function(){
                  error=function(e){return("No reference data to calculate calibration formulas")})
       })
       output$formulaNoInt <- renderText({
+        tryCatch({lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn},
+                 error=function(e){return("No reference data to calculate calibration formulas")})
+      })
+      output$formula_chla <- renderText({
+        tryCatch({lm_eqn(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn},
+                 error=function(e){return("No reference data to calculate calibration formulas")})
+      })
+      output$formulaNoInt_chla <- renderText({
         tryCatch({lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn},
                  error=function(e){return("No reference data to calculate calibration formulas")})
       })
@@ -1606,7 +1710,49 @@ HIC.App.manual <- function(){
             showNotification("Could not calculate a linear regression. Please use the manuall calibration. Or check that you have the correct marked-group selected.", type = 'error')
           }else{
             val <- sapply(val,f)
-            isolate(work$log <- rbind(work$log,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$log <- rbind(work$log,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,ifelse(grp==0,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)",'')))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$trans <- rbind(work$trans,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,ifelse(grp==0,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)",'')))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+          }
+
+          vals$valCont[cond] <- val
+
+        })
+      })
+      observeEvent(input$cal.nonsus_toggle_chla, {
+        withProgress(message = 'Process: Performing mathematical transformation on dataset',{
+          grp <- 0 #input$calgroup
+          vec <- vals$state
+          if(grp==0){ #if 0 then take all non marked values
+            cond <- vec<input$min21|vec>(input$min21+8) #not marked
+          }else{ #else take all marked values in chosen group
+            cond <- vec== input$min21+as.numeric(grp)-1 & !is.na(vec)
+          }
+          if(sum(cond)==0){
+            showNotification('There is no data in the selected marked-grouping. Please select a different grouping', type = 'error')
+            return(NULL)
+          }
+
+          a<-NULL;b<-NULL
+          try(silent = T,
+               #calibrate with no y intercept
+                {a<-as.numeric(lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$a)
+                b<-as.numeric(lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$b)}
+
+          )
+
+          f<-function(x){
+            output<-a+b*x
+            return(output)
+          }
+          val <- vals$valCont[cond]
+          time$time <- Sys.time() #saving system time of operation for work log
+
+          if(is.null(a)|is.null(b)){
+            showNotification("Could not calculate a linear regression. Please use the manuall calibration. Or check that you have the correct marked-group selected.", type = 'error')
+          }else{
+            val <- sapply(val,f)
+            isolate(work$log <- rbind(work$log,paste("Calibrate all chlorophyll data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$trans <- rbind(work$trans,paste("Calibrate all chlorophyll data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
           }
 
           vals$valCont[cond] <- val
@@ -1635,7 +1781,8 @@ HIC.App.manual <- function(){
 
           tryCatch({
             val <- sapply(val,fman)
-            isolate(work$log <- rbind(work$log,paste("Calibrate all data in 'Marked Grouping'",grp," with",as.character(input$cal.nonsus_input),"at",time$time,". (Group 0 means all not inside a marked grouping.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$log <- rbind(work$log,paste("Calibrate all data in 'Marked Grouping'",grp," with",as.character(input$cal.nonsus_input),"at",time$time,ifelse(grp==0, ". (Group 0 means all not inside a marked grouping.)","")))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$trans <- rbind(work$trans,paste("Calibrate all data in 'Marked Grouping'",grp," with",as.character(input$cal.nonsus_input),"at",time$time,ifelse(grp==0,". (Group 0 means all not inside a marked grouping.)","")))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
           },
           error=function(e){
             showNotification(paste("Error in manual calibration entry: ", e$message), type = "error", duration = NULL)
@@ -1647,6 +1794,24 @@ HIC.App.manual <- function(){
         })
       })
 
+      #set to no y-intercept when the parameter is chlorophyl and with y-intercept if else------------
+      observeEvent(vals$parCont,{
+        try(ifelse(vals$parCont=='Chfyla',
+               updateCheckboxInput(session,'cal.nonsus_check',value = T),
+               updateCheckboxInput(session,'cal.nonsus_check',value = F)
+               ))
+      })
+      observeEvent(vals$StNoCont,{
+        try(ifelse(vals$parCont=='Chfyla',
+                   updateCheckboxInput(session,'cal.nonsus_check',value = T),
+                   updateCheckboxInput(session,'cal.nonsus_check',value = F)
+        ))
+      })
+
+      #Conditional pannel for chlorophyl calibration------------
+
+      output$ischla <- reactive(ifelse(vals$parCont=='Chfyla',T,F)) #creates an output from the input for doing display logic with
+      outputOptions(output, "ischla", suspendWhenHidden = FALSE) #this output is never rendered so this allows it to be calculated even though it is not visible
 
       #Cont Data manipulation button controls---------------------------------------------------------------
 
@@ -1732,14 +1897,63 @@ HIC.App.manual <- function(){
         isolate(work$log <- rbind(work$log,paste("points tagged as good and state of value changed to",input$for9,": data range xmin =",datetimeform(as.numeric(input$plot_brush$xmin)),"xmax =",datetimeform(as.numeric(input$plot_brush$xmax)),"ymin =",(as.numeric(input$plot_brush$ymin)),"ymax =",(as.numeric(input$plot_brush$ymax)),"at",Sys.time()))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reavtive function reevaluate for ever
       })
 
+      #tag brushed points as suspect
+      observeEvent(input$suspect_toggle, {
+        x <- vals$tCont
+        y <- vals$valCont
+        dafrm <- data.frame(x,y)
+        res <- brushedPoints(dafrm, input$plot_brush,  xvar = "x", yvar = "y", allRows = TRUE)
+        res <- res$selected_
+        if(input$PPFDdata){
+          y3 <- vals$valContL
+          y4 <- vals$valContU
+          dafrm3 <- data.frame(x,y3)
+          dafrm4 <- data.frame(x,y4)
+          res3 <- brushedPoints(dafrm3, input$plot3_brush,  xvar = "x", yvar = "y3", allRows = TRUE)
+          res4 <- brushedPoints(dafrm4, input$plot4_brush,  xvar = "x", yvar = "y4", allRows = TRUE)
+          res <- as.logical(res+res3$selected_+res4$selected_)
+        }
+
+        vals$state[res] <- as.numeric(input$for13)
+        infotag  <-  paste(": data range xmin =",datetimeform(as.numeric(input$plot_brush$xmin)),"xmax =",datetimeform(as.numeric(input$plot_brush$xmax)),"ymin =",(as.numeric(input$plot_brush$ymin)),"ymax =",(as.numeric(input$plot_brush$ymax)),"at",Sys.time())
+        output$info <- renderText(paste("points tagged as suspect",infotag))
+        isolate(work$log <- rbind(work$log,paste("points tagged as suspect and state of value changed to",input$for13,": data range xmin =",datetimeform(as.numeric(input$plot_brush$xmin)),"xmax =",datetimeform(as.numeric(input$plot_brush$xmax)),"ymin =",(as.numeric(input$plot_brush$ymin)),"ymax =",(as.numeric(input$plot_brush$ymax)),"at",Sys.time()))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reavtive function reevaluate for ever
+      })
+
+      #tag brushed points to be deleted
+      observeEvent(input$delete_toggle, {
+        x <- vals$tCont
+        y <- vals$valCont
+        dafrm <- data.frame(x,y)
+        res <- brushedPoints(dafrm, input$plot_brush,  xvar = "x", yvar = "y", allRows = TRUE)
+        res <- res$selected_
+        if(input$PPFDdata){
+          y3 <- vals$valContL
+          y4 <- vals$valContU
+          dafrm3 <- data.frame(x,y3)
+          dafrm4 <- data.frame(x,y4)
+          res3 <- brushedPoints(dafrm3, input$plot3_brush,  xvar = "x", yvar = "y3", allRows = TRUE)
+          res4 <- brushedPoints(dafrm4, input$plot4_brush,  xvar = "x", yvar = "y4", allRows = TRUE)
+          res <- as.logical(res+res3$selected_+res4$selected_)
+        }
+
+        vals$state[res] <- as.numeric(input$min21)
+        infotag  <-  paste(": data range xmin =",datetimeform(as.numeric(input$plot_brush$xmin)),"xmax =",datetimeform(as.numeric(input$plot_brush$xmax)),"ymin =",(as.numeric(input$plot_brush$ymin)),"ymax =",(as.numeric(input$plot_brush$ymax)),"at",Sys.time())
+        output$info <- renderText(paste("points tagged to be deleted",infotag))
+        isolate(work$log <- rbind(work$log,paste("points tagged to be deleted and state of value changed to",input$min21,": data range xmin =",datetimeform(as.numeric(input$plot_brush$xmin)),"xmax =",datetimeform(as.numeric(input$plot_brush$xmax)),"ymin =",(as.numeric(input$plot_brush$ymin)),"ymax =",(as.numeric(input$plot_brush$ymax)),"at",Sys.time()))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reavtive function reevaluate for ever
+      })
+
+
+
+
 
       #Reclassify marked group as an Other State of Value
       output$sto.state.class <- renderUI({ #this code renders the drop down list that takes it's listings from the graphing preference page of state of values
-        dropdown <- c(input$for9,input$for10,input$for11,input$for12,input$for13,input$for14,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49)
-        names(dropdown) <- c(input$state9,input$state10,input$state11,input$state12,input$state13,input$state14,input$state34,input$state35,input$state36,input$state37,input$state38,input$state39,input$state40,input$state41,input$state42,input$state43,input$state44,input$state45,input$state46,input$state47,input$state48,input$state49)
+        dropdown <- c(input$for9,input$for11,input$for13)#,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49)
+        names(dropdown) <- c(input$state9,input$state11,input$state13)#,input$state34,input$state35,input$state36,input$state37,input$state38,input$state39,input$state40,input$state41,input$state42,input$state43,input$state44,input$state45,input$state46,input$state47,input$state48,input$state49)
         if(input$PPFDdata){
-          dropdown <- c(input$for9,input$for11,input$for13,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49)
-          names(dropdown) <- c(input$state9,input$state11,input$state13,input$state34,input$state35,input$state36,input$state37,input$state38,input$state39,input$state40,input$state41,input$state42,input$state43,input$state44,input$state45,input$state46,input$state47,input$state48,input$state49)
+          dropdown <- c(input$for9,input$for11,input$for13)#,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49)
+          names(dropdown) <- c(input$state9,input$state11,input$state13)#,input$state34,input$state35,input$state36,input$state37,input$state38,input$state39,input$state40,input$state41,input$state42,input$state43,input$state44,input$state45,input$state46,input$state47,input$state48,input$state49)
 
         }
         selectInput("sto.state.class.val", "Non-work-class State of Value", dropdown)
@@ -1779,6 +1993,21 @@ HIC.App.manual <- function(){
       })
 
       #Brush reclassify custom state of value number code to custom state of value number code
+      output$brushfrom_list <- renderUI({ #this code renders the drop down list that takes it's listings from the graphing preference page of state of values
+        State.of.Value <- as.integer(levels(as.factor(vals$state)))
+        Legend.Label <- sapply(State.of.Value,f1)
+
+        dropdown <- State.of.Value
+        names(dropdown) <- Legend.Label
+
+        selectInput("brushfrom", "from tag", dropdown)
+      })
+      output$brushto_list <- renderUI({ #this code renders the drop down list that takes it's listings from the graphing preference page of state of values
+        dropdown <- c(input$min21,input$min21+1,input$min21+2,input$min21+3,input$min21+4,input$min21+5,input$min21+6,input$min21+7,input$min21+8,input$for9,input$for11,input$for13)#,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49)
+        names(dropdown) <- c('to delete', 'group 2', 'group 3', 'group 4', 'group 5', 'group 6', 'group 7', 'group 8', 'group 9',input$state9,input$state11,input$state13)#,input$state34,input$state35,input$state36,input$state37,input$state38,input$state39,input$state40,input$state41,input$state42,input$state43,input$state44,input$state45,input$state46,input$state47,input$state48,input$state49)
+
+        selectInput("brushto", "to tag", dropdown)
+      })
       observeEvent(input$ctc.Brush.reclass_toggl,{
         if(!(is.null(input$brushfrom)|is.na(input$brushfrom)|is.null(input$brushto)|is.na(input$brushto))){
           x <- vals$tCont
@@ -1808,9 +2037,15 @@ HIC.App.manual <- function(){
 
 
       #Reclassify marked Group as an Other marked Group
+      output$sts2.sus_list <- renderUI({ #this code renders the drop down list that takes it's listings from the graphing preference page of state of values
+        dropdown <- c(input$min21,input$min21+1,input$min21+2,input$min21+3,input$min21+4,input$min21+5,input$min21+6,input$min21+7,input$min21+8,input$for9,input$for11,input$for13)#,input$for34,input$for35,input$for36,input$for37,input$for38,input$for39,input$for40,input$for41,input$for42,input$for43,input$for44,input$for45,input$for46,input$for47,input$for48,input$for49)
+        names(dropdown) <- c('to delete', 'group 2', 'group 3', 'group 4', 'group 5', 'group 6', 'group 7', 'group 8', 'group 9',input$state9,input$state11,input$state13)#,input$state34,input$state35,input$state36,input$state37,input$state38,input$state39,input$state40,input$state41,input$state42,input$state43,input$state44,input$state45,input$state46,input$state47,input$state48,input$state49)
+
+        selectInput("sts2.sus_tag", "to tag", dropdown)
+      })
       observeEvent(input$sts.reclass_toggle,{ #this is the code to reclassify the specified marked grouping
         susgrp1 <- as.numeric(input$min21)-1+as.numeric(input$sts1.sus_tag)#to get the marked group number
-        susgrp2 <- as.numeric(input$min21)-1+as.numeric(input$sts2.sus_tag)#to get the marked group number
+        susgrp2 <- as.numeric(input$sts2.sus_tag)#to get the marked group number
         con <- vals$state == susgrp1&!is.na(vals$state)
         vals$state[con] <- as.numeric(susgrp2)
         infotag  <-  paste("at",Sys.time())
@@ -1820,7 +2055,7 @@ HIC.App.manual <- function(){
 
       #Delete marked Group
       observeEvent(input$s.delete_toggle,{ #this is the code to reclassify the spesified marked grouping
-        susgrp1 <- as.numeric(input$min21)-1+as.numeric(input$s.delete.sus_tag)#to get the marked goup number
+        susgrp1 <- as.numeric(input$min21)#to get the marked goup number
         con <- vals$state == susgrp1&!is.na(vals$state)
         vals$valCont[con] <- NA
         if(input$PPFDdata){
@@ -1841,6 +2076,13 @@ HIC.App.manual <- function(){
         return(df)
       })
       output$StateOfValueTable <- renderTable(statetab())
+      statetab <- reactive({
+        State.of.Value <- as.integer(levels(as.factor(vals$state)))
+        Legend.Label <- sapply(State.of.Value,f1)
+        df <- data.frame(State.of.Value,Legend.Label)
+        return(df)
+      })
+
 
 
 

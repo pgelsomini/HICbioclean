@@ -207,11 +207,11 @@ HIC.Continuous.Data.Import.Format = function(InputDirectory,OutputDirectory, Dat
 #' Input directory must be a folder containing all the csv files of the PPFD data with the upper
 #' and lower sensor data files together with unique station names for each pair of files and
 #' consistent separate parameter IDs for the upper and lower sensors also in the file names.
-#' For example the files in your directory may be station1.PPFD1.csv, station1.PPFD.csv, station2.PPFD1.csv,
-#' station2.PPFD.csv where you have two stations (station1 and station2) and you have an upper sensor ID (PPFD1)
+#' For example the files in your directory may be station1_PPFD1.csv, station1_PPFD.csv, station2_PPFD1.csv,
+#' station2_PPFD.csv where you have two stations (station1 and station2) and you have an upper sensor ID (PPFD1)
 #' and a lower sensor ID (PPFD). You must give the ‘UpperSensorParameterName’ and the ‘LowerSensorParameterName’
 #' in order for the function to know which files belong to which sensor. This is not a generic
-#' function because it assumes that the components of the csv file names are separated by decimals(.)
+#' function because it assumes that the components of the csv file names are separated by underscore(_)
 #' and that when the files are arranged alphabetically, the upper and lower sensor pairs will be next to each other.
 #'
 #'    Please see the FunctionLogFile.txt that was generated to see any error messages and details about the selected preferences and calculated preferences.
@@ -506,19 +506,25 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
       message(paste('processing file set',i,'of',nfiles/2))
       #load data
       if(!is.null(input.directory)){ #if directory is given
+        warningfunc <- function(x){
+          warning(x)
+          logdata <<- rbind(logdata,paste("Files caused warning:",files[i*2-1],'and',files[i*2],x))
+        }
         UpperAndLowerSensors = c(UpperSensorParameterName,LowerSensorParameterName)
-        if(!(strsplit(files[i*2], ".", fixed = TRUE)[[1]][[1]]==strsplit(files[i*2-1], ".", fixed = TRUE)[[1]][[1]])) stop('Station Names do not match. This function takes all files in a folder and processes them 2 by 2 with the assumption that the upper and lower PPFD sensors will have identical station names, and thus will be placed next to eachother when the csv files are ordered alphabetically. Check that only PPFD data files are in the folder, that each pair of sensors has the same station name and that all pairs of sensors are complete.') #Split the file at the first decimal, this should be the station name. Are the station names the same at the two sites?
+        if(!(strsplit(files[i*2], "_", fixed = TRUE)[[1]][[1]]==strsplit(files[i*2-1], "_", fixed = TRUE)[[1]][[1]])){
+          warningfunc('Station Names do not match. This function takes all files in a folder and processes them 2 by 2 with the assumption that the upper and lower PPFD sensors will have identical station names, and thus will be placed next to eachother when the csv files are ordered alphabetically. Check that only PPFD data files are in the folder, that each pair of sensors has the same station name and that all pairs of sensors are complete. If the station names are not separated with a _ from the parameter name in the file name this will also cause this warning') #Split the file at the first decimal, this should be the station name. Are the station names the same at the two sites?
+        }
         if(sort(UpperAndLowerSensors)[1]==LowerSensorParameterName){ #if lower sensor come first alphabetically
           upperfirst<-F
-          if(!grepl(paste0(UpperSensorParameterName,'.'),files[i*2],fixed = T)) stop('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.') #check that the second file alphabetically is the upper sensor
-          if(!grepl(paste0(LowerSensorParameterName,'.'),files[i*2-1],fixed = T)) stop('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.') #check that the first file alphabetically is the lower sensor
+          if(!grepl(paste0(UpperSensorParameterName,'_'),files[i*2],fixed = T)) warningfunc('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.  If the station names are not separated with a _ from the parameter name in the file name this will also cause this warning') #check that the second file alphabetically is the upper sensor
+          if(!grepl(paste0(LowerSensorParameterName,'_'),files[i*2-1],fixed = T)) warningfunc('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.  If the station names are not separated with a _ from the parameter name in the file name this will also cause this warning') #check that the first file alphabetically is the lower sensor
           T2 = read.csv(paste0(input.directory, '/', files[i*2-1]), sep = sep, dec = dec, header = header) # should be lower sensor
           T1 = read.csv(paste0(input.directory, '/', files[i*2]), sep = sep, dec = dec, header = header)  # should be upper sensor
           logdata <- rbind(logdata,paste('Processing upper sensor file:',files[i*2],'and lower sensor file:',files[i*2-1]))
         }else{
           upperfirst<-T
-          if(!grepl(paste0(UpperSensorParameterName,'.'),files[i*2-1],fixed = T)) stop('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.') #check that the second file alphabetically is the upper sensor
-          if(!grepl(paste0(LowerSensorParameterName,'.'),files[i*2],fixed = T)) stop('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.') #check that the first file alphabetically is the lower sensor
+          if(!grepl(paste0(UpperSensorParameterName,'.'),files[i*2-1],fixed = T)) warningfunc('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.  If the station names are not separated with a _ from the parameter name in the file name this will also cause this warning') #check that the second file alphabetically is the upper sensor
+          if(!grepl(paste0(LowerSensorParameterName,'.'),files[i*2],fixed = T)) warningfunc('Sensor parameter name not found in file name. Check that only PPFD data is in the folder and that the same parameter names are used for the upper and lower sensors at each site.  If the station names are not separated with a _ from the parameter name in the file name this will also cause this warning') #check that the first file alphabetically is the lower sensor
           T1 = read.csv(paste0(input.directory, '/', files[i*2-1]), sep = sep, dec = dec, header = header) # should be upper sensor
           T2 = read.csv(paste0(input.directory, '/', files[i*2]), sep = sep, dec = dec, header = header)  # should be lower sensor
           logdata <- rbind(logdata,paste('Processing upper sensor file:',files[i*2-1],'and lower sensor file:',files[i*2]))

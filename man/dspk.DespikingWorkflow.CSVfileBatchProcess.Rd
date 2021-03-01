@@ -290,7 +290,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess(
    #Because it is numeric no datetime formatting info is needed
    ConditionalMinMaxColumn = 'Parameter.Name',
    ConditionalMinMaxValues = c('DO','pH','chfyla','PPFD1','PPFD'),
-   ConditionalMin = c(0,0,0,0,0), ConditionalMax = c(15,15,1000,2000,2000)
+   ConditionalMin = c(0,0,0,0,0), ConditionalMax = c(30,15,1000,2000,2000)
    #conditional min max filter based on parameter with minimum reasonable value
    #for oxygen, pH, chlorophyll a, and PPFD being 0 and the maximum
    #reasonable value for oxygen and pH being 15 and chlorophyll 1000 and PPFD being 2000

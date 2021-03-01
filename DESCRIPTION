@@ -12,7 +12,9 @@ LazyData: true
 Imports: 
     shiny,
     colourpicker,
-    readxl
+    readxl,
+    reshape2,
+    stringr
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
