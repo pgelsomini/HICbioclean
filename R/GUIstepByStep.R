@@ -1,5 +1,5 @@
 
-#Shiny App for manual data cleaning of Cont continuous data
+#Shiny App for guided manual data cleaning of Cont continuous data
 #Pali Gelsomini ECOBE 2020
 
 
@@ -9,8 +9,6 @@
 #' These graphical apps will walk you through the entire work flow of data import, validation/calibration and data export, in an intuitive visual manner without the need for coding.
 #' This is the only method of manual validation and calibration and final export.
 #'
-#' Either enter "format" to format HIC database data, "auto" to auto-validate formatted data, or "manual" to manually check and calibrate auto-validated data against reference site locations (if available) and export final zrx files for upload back into the HIC database.
-#'
 #' The formatting step and the auto validation step can be done in R code using the functions HIC.Continuous.Data.Import.Format(), spk.DespikingWorkflow.CSVfileBatchProcess(), and HIC.PPFDAutoValidation.CSVfileBatchProcess().
 #' The manual validation, calibration and final export must be done using this graphical app.
 #'
@@ -19,7 +17,7 @@
 #'
 #' Second: auto-validate the formatted files - HIC.App.auto()
 #'
-#' Third: manual-validate/calibrate the files and export the data - HIC.App.manual()
+#' Third: manual-validate/calibrate the files and export the data - HIC.App.manual.StepByStep()
 #'
 #' Files can be batch processed at each step so there is no need to run through all the steps for each individual file.
 #'
@@ -33,7 +31,7 @@
 #' @examples
 #' HIC.App.format() # to format the HIC database output csv files
 #' HIC.App.auto() # to auto-validate the formatted data
-#' HIC.App.manual() # to manually check the auto-validated data
+#' HIC.App.manual.StepByStep() # to manually check the auto-validated data
 HIC.App.manual.StepByStep <- function(){
   require(shiny)
   require(colourpicker)
@@ -49,23 +47,27 @@ HIC.App.manual.StepByStep <- function(){
         tabsetPanel(type = "tabs",
                     tabPanel("Step 1: File upload",
 
+                             fluidRow(h5('Click browse to choose your continuous data file that you have auto-validated. It will be in the folder “autodespikeYYYYMMDDHHMMSS” or “autoPPFDdespikeYYYYMMDDHHMMSS” in the subsolder “FinalData” in your working directory (see the help tab for your working directory).')),
                              fileInput("Contfile", "Choose Continuous CSV File",
                                        accept = c(
                                          "text/csv",
                                          "text/comma-separated-values,text/plain",
                                          ".csv")),
                              tableOutput("ContDataHead"),
+                             fluidRow(h5('Click browse to choose the OMES data file as your periodic csv file for your reference data. The OMES data must be in a csv with semicolon “;” separation, the column names “ReadingDate”, “StationName”, “ParameterName”, and “ReadingValue” and datetime format 15/01/2019 13:13. You can format this file in excel and save as csv to achieve this.')),
                              fileInput("Perifile", "Choose Periodic CSV File",
                                        accept = c(
                                          "text/csv",
                                          "text/comma-separated-values,text/plain",
                                          ".csv")),
                              tableOutput("PeriDataHead"),
+                             fluidRow(h5('If you have a sensor maintenance file for your site, load that as well. The excel sensor maintenance files from WISKI must first be converted to csv files with the function HIC.maint() or the R Shiny app HIC.App.format(). ')),
                              fileInput("Maintfile", "Choose sensor maintenance CSV File",
                                        accept = c(
                                          "text/csv",
                                          "text/comma-separated-values,text/plain",
                                          ".csv")),
+                             fluidRow(actionButton('removeMaintfile','Remove maintenence file')),
                              tableOutput("MaintDataHead")
 
                     ),
@@ -82,17 +84,17 @@ HIC.App.manual.StepByStep <- function(){
                                resetOnNew = TRUE),
                                dblclick = "plot_dblclick")
                              ),
-                             #conditionalPanel(condition = 'input.PPFDdata',
-                             #                 fluidRow(plotOutput("plot4", brush = brushOpts(
-                             #                   id = "plot4_brush",
-                             #                   resetOnNew = TRUE),
-                             #                   dblclick = "plot4_dblclick")
-                             #                 ),
-                             #                 fluidRow(plotOutput("plot3", brush = brushOpts(
-                             #                   id = "plot3_brush",
-                             #                   resetOnNew = TRUE),
-                             #                   dblclick = "plot3_dblclick")
-                             #                 )),
+                             conditionalPanel(condition = 'input.PPFDdata',
+                                              fluidRow(plotOutput("plot4", brush = brushOpts(
+                                                id = "plot4_brush",
+                                                resetOnNew = TRUE),
+                                                dblclick = "plot4_dblclick")
+                                              ),
+                                              fluidRow(plotOutput("plot3", brush = brushOpts(
+                                                id = "plot3_brush",
+                                                resetOnNew = TRUE),
+                                                dblclick = "plot3_dblclick")
+                                              )),
                              fluidRow('Draw box on graph and double click to zoom in to drawn box. Double click on graph to zoom out to full extent'),
                              fluidRow(splitLayout(
                                checkboxInput('lockxaxis','Lock x-axis', value = F),
@@ -151,6 +153,11 @@ HIC.App.manual.StepByStep <- function(){
                     tabPanel('Step 3: Document full dataset',
                              fluidRow(h5('Copy and paste this graph into the word document')),
                              plotOutput("plotMainFull"),
+                             conditionalPanel(condition = 'input.PPFDdata',
+                                              fluidRow(plotOutput("plot4Full")
+                                              ),
+                                              fluidRow(plotOutput("plot3Full")
+                                              )),
                              fluidRow(splitLayout(checkboxInput('legendFull','add legend to graph',value = T),
                                                   selectInput('legendlocalFull','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
                              ))
@@ -178,7 +185,7 @@ HIC.App.manual.StepByStep <- function(){
 
                     tabPanel("Step 6: Transform/recalibrate specially marked areas",
                              fluidRow(h5('If you have any data that needs to be specially transformed/recalibrated, then it should have been marked in step 2. You can select the marked group you wish to transform and use the below tools to do so.')),
-                             fluidRow(h5('Switch back and forth between this step and step 2 to see your data which you are transforming')),
+                             fluidRow(h5('Switch back and forth between this step and step 7 to see your data which you are transforming')),
                              fluidRow('Draw box on graph and double click to zoom in to drawn box. Double click on graph to zoom out to full extent'),
                              plotOutput("plot2", brush = brushOpts(
                                id = "plot2_brush",
@@ -201,15 +208,51 @@ HIC.App.manual.StepByStep <- function(){
                              actionButton("cal.manual_toggle", "Manual calibrate points"),
                              tableOutput("CorTable")
                     ),
-                    tabPanel('Step 7: document final full dataset and transformations',
-                             fluidRow(h5('Copy and paste this graph and the below table of your transformations into the word document')),
-                             plotOutput("plotMainFull2"),
+                    tabPanel('Step 7: Check your data transformations',
+                             fluidRow(h5('Check the data transformations you just did. This graph is zoomable. Go back to step 6 if you wish to adjust the transformations.')),
+                             fluidRow(h5('You cannot undo your work, but you can go back to step 6 and apply the inverse of the previously done transformation to undo it. You can find a list of all your transformations below.')),
+                             fluidRow(plotOutput("plotMainFull2", brush = brushOpts(
+                               id = "plot_brushFull2",
+                               resetOnNew = TRUE),
+                               dblclick = "plot_dblclickFull2")
+                             ),
+                             conditionalPanel(condition = 'input.PPFDdata',
+                                              fluidRow(plotOutput("plot4Full2", brush = brushOpts(
+                                                id = "plot4_brushFull2",
+                                                resetOnNew = TRUE),
+                                                dblclick = "plot4_dblclickFull2")
+                                              ),
+                                              fluidRow(plotOutput("plot3Full2", brush = brushOpts(
+                                                id = "plot3_brushFull2",
+                                                resetOnNew = TRUE),
+                                                dblclick = "plot3_dblclickFull2")
+                                              )),
+                             fluidRow('Draw box on graph and double click to zoom in to drawn box. Double click on graph to zoom out to full extent'),
+                             fluidRow(splitLayout(
+                               checkboxInput('lockxaxisFull2','Lock x-axis', value = F),
+                               checkboxInput('lockyaxisFull2','Lock y-axis', value = F),
+                               actionButton('zoomout_toggleFull2','zoom out 2x'),
+                               tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))) #to fix issue with dropdown menus not working in split layout
+                             )),
                              fluidRow(splitLayout(checkboxInput('legendFull2','add legend to graph',value = T),
                                                   selectInput('legendlocalFull2','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
                              )),
+                             tableOutput("transformation.table1")
+                    ),
+                    tabPanel('Step 8: document final full dataset and transformations',
+                             fluidRow(h5('Copy and paste this graph and the below table of your transformations into the word document')),
+                             plotOutput("plotMainFull4"),
+                             conditionalPanel(condition = 'input.PPFDdata',
+                                              fluidRow(plotOutput("plot4Full4")
+                                              ),
+                                              fluidRow(plotOutput("plot3Full4")
+                                              )),
+                             fluidRow(splitLayout(checkboxInput('legendFull4','add legend to graph',value = T),
+                                                  selectInput('legendlocalFull4','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
+                             )),
                              tableOutput("transformation.table")
                     ),
-                    tabPanel("Step 8: Reclassifying state of value codes",
+                    tabPanel("Step 9: Reclassifying state of value codes",
                              fluidRow(h5('All the marked groupings need to be assigned a state of value. If they were transformed, then they need to be labeled as "estimate" or "suspect".
                                          See the talbe at the bottom of this page to see which marked groups are still in the dataset and still need to be assigned a state of value.')),
                              fluidRow(column(10,"'Marked Grouping' --->>> Non-work-class state of value")),
@@ -219,7 +262,7 @@ HIC.App.manual.StepByStep <- function(){
                                                   verbatimTextOutput("sto.code"))
                              ),
                              fluidRow(h5('Delete all the points that you marked to be deleted.')),
-                             fluidRow(column(10,"'Marked Grouping' --->>> 'Manual Delete'")),
+                             fluidRow(column(10,"'Marked to delete' --->>> 'Manual Delete'")),
                              fluidRow(splitLayout(actionButton("s.delete_toggle","Delete"))),
                              fluidRow(h5('All the rest of the points that aren`t labeled as "suspect" or "estimate" yet can be labeled as "good"')),
                              fluidRow(column(10,"All work-classes except 'Marked Groupings' --->>> 'Good' state of value")),
@@ -239,25 +282,31 @@ HIC.App.manual.StepByStep <- function(){
 
                              fluidRow(tableOutput("StateOfValueTable"))
                     ),
-                    tabPanel('Step 9: Gap interpolation',
+                    tabPanel('Step 10: Gap interpolation',
                              fluidRow(h5("As the last step all the gaps of one hour or less shall be interpolated.
                                          !!!Interpolate as your last step before exporting!!! Gaps interpolated during the manual check get labeled as estimate. If you don't do this as the final step you may accidentally overwrite the estimate label.")),
                              tags$head(tags$style('h5 {color:red}')), #colors all heading 5 texts as red
                              fluidRow(
-                               column(4,actionButton("interpolate_toggle","interpolate gaps"),actionButton("interpolateBrush_toggle", "interpolate gaps in brushed box on graph in step 2"),),
+                               column(4,actionButton("interpolate_toggle","interpolate gaps")),
                                column(6,numericInput("maxgap_interpolate","max time gap of interpolation in minutes",60))
                              ),
+                             fluidRow(actionButton("interpolateBrush_toggle", "interpolate gaps in brushed box on graph in step 2")),
                              tags$head(tags$style(HTML('#interpolate_toggle{background-color:orange}'))),
 
                     ),
-                    tabPanel('Step 10: document final full dataset with final state of values',
+                    tabPanel('Step 11: document final full dataset with final state of values',
                              fluidRow(h5('Copy and paste this graph into the word document')),
                              plotOutput("plotMainFull3"),
+                             conditionalPanel(condition = 'input.PPFDdata',
+                                              fluidRow(plotOutput("plot4Full3")
+                                              ),
+                                              fluidRow(plotOutput("plot3Full3")
+                                              )),
                              fluidRow(splitLayout(checkboxInput('legendFull3','add legend to graph',value = T),
                                                   selectInput('legendlocalFull3','legend location', c('topleft','top','topright','right','bottomright','bottom','bottomleft','left','center'))
                              ))
                     ),
-                    tabPanel("Step 11: Export",
+                    tabPanel("Step 12: Export",
                              fluidRow(h5('Export the data. It will be saved into the working directory. You can see your working directory below.')),
                              fluidRow(actionButton("export_con_toggle", "Click to Export Continuous Data csv, Continuous Data zrx, Correlation Table and Work Log")),
                              tags$head(tags$style(HTML('#export_con_toggle{background-color:orange}'))),
@@ -488,14 +537,16 @@ HIC.App.manual.StepByStep <- function(){
       #Work log table------------------------------------------------------------------------------
       work <- reactiveValues(
         log = "GUI Started",
-        trans = NULL
+        trans = ""
       )
 
       output$worklog.table <- renderTable(work$log)
-      output$transformation.table <- renderTable(ifelse(length(work$trans)>0,work$trans,'No transformations were made'))
+      output$transformation.table <- renderTable(work$trans)
+      output$transformation.table1 <- renderTable(work$trans)
 
       observeEvent(input$clear.worklog_toggle,{
-        work$log = "Work log cleared"})
+        work$log = "Work log cleared"
+        work$trans = ""})
 
       exportworklog <- function(systime=NULL){
         if(is.null(systime))systime<-Sys.time()
@@ -643,7 +694,7 @@ HIC.App.manual.StepByStep <- function(){
           isolate(work$log <- rbind(work$log,paste("continuous data exported to",paste0(subdir,input$Note_con,input$Contfile$name,"_",format(Sys.time(), "%Y%m%d_%H%M%S"),".csv"),"at",Sys.time()))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reavtive function reevaluate for ever
           try(exportcorelationtable(systime),silent = T)
           exportworklog(systime)
-          if(input$deleteworklog)work$log <- NULL
+          if(input$deleteworklog){work$log <- NULL; work$trans = ""}
         })
       })
 
@@ -989,6 +1040,22 @@ HIC.App.manual.StepByStep <- function(){
         return(df)
 
       })
+      #only data from the non marked groups (group 0)
+      goodtab0 <- reactive({
+        vec <- cortab()$state
+        grp <- 0
+        if(grp==0){ #if 0 then take all non marked and non suspect values
+          cond <- vec!=input$min20&(vec<input$min13|vec>input$max14)&(vec<input$min21|vec>(input$min21+8)) #not marked or suspect
+        }else{ #else take all marked values in chosen group
+          cond <- vec== input$min21+as.numeric(grp)-1 & !is.na(vec)
+        }
+        goodvalCont <- cortab()$valCont[cond]
+        goodvalPeri <- cortab()$valPeri[cond]
+        df <- data.frame(goodvalCont,goodvalPeri)
+
+        return(df)
+
+      })
 
       #display the correlation table on the GUI
       output$CorTable <- renderTable({tryCatch({cortab()},
@@ -1031,6 +1098,9 @@ HIC.App.manual.StepByStep <- function(){
         return(table)
       })
 
+      MaintT = reactiveValues(data = NULL)
+      observe(MaintT$data <- Maint())
+
       #vectorize data
       valsMaint <- reactiveValues(
         tMaint = NULL,
@@ -1038,16 +1108,24 @@ HIC.App.manual.StepByStep <- function(){
         actionMaint= NULL,
         data = Maint
       )
-      observe({valsMaint$tMaint <- Maint()[[input$tMaintcol]]})
-      observe({valsMaint$diviceMaint <- as.factor(Maint()[[input$diviceMaintcol]])})
-      observe({valsMaint$actionMaint <- as.factor(Maint()[[input$actionMaintcol]])})
+      observe({valsMaint$tMaint <- MaintT$data[[input$tMaintcol]]})
+      observe({valsMaint$diviceMaint <- as.factor(MaintT$data[[input$diviceMaintcol]])})
+      observe({valsMaint$actionMaint <- as.factor(MaintT$data[[input$actionMaintcol]])})
+      #remove the data
+      observeEvent(input$removeMaintfile, {
+        #valsMaint$tMaint <- NULL
+        #valsMaint$diviceMaint <- NULL
+        #valsMaint$actionMaint <- NULL
+        MaintT$data <- NULL
+      })
 
 
       #Make data table headsor displaying under file upload
       output$MaintDataHead <- renderTable({
         Maintfile <- input$Maintfile
         isolate(work$log <- rbind(work$log,paste("loaded sensor maintenance data file:",Maintfile$name))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reavtive function reevaluate for ever
-        return(head(Maint(),n=2))})
+        return(head(MaintT$data,n=2))
+      })
 
 
 
@@ -1353,14 +1431,28 @@ HIC.App.manual.StepByStep <- function(){
       output$plotMainFull <- renderPlot({
         Build_PlotMain(input$legendFull,input$legendlocalFull,ranges$x,ranges$y, fullextent = T)
       })
+
+      #variable for storing zoom extent coordinates Full2
+      rangesFull2 <- reactiveValues(x = NULL, y = NULL, y3=NULL, y4=NULL)
+      observe(if(isolate(!input$lockxaxisFull2)){rangesFull2$x <- range(vals$tCont, na.rm = T, finite = T)})
+      observe(if(isolate(!input$lockyaxisFull2)){rangesFull2$y <- range( vals$valCont, na.rm = T, finite = T)})
+      observe(if(isolate(!input$lockyaxisFull2)){rangesFull2$y3 <- range( vals$valContL, na.rm = T, finite = T)})
+      observe(if(isolate(!input$lockyaxisFull2)){rangesFull2$y4 <- range( vals$valContU, na.rm = T, finite = T)})
+
       output$plotMainFull2 <- renderPlot({
-        Build_PlotMain(input$legendFull2,input$legendlocalFull2,ranges$x,ranges$y, fullextent = T)
+        Build_PlotMain(input$legendFull2,input$legendlocalFull2,rangesFull2$x,rangesFull2$y, fullextent = F)
       })
+
       output$plotMainFull3 <- renderPlot({
         Build_PlotMain(input$legendFull3,input$legendlocalFull3,ranges$x,ranges$y, fullextent = T)
       })
 
-      output$plot3 <- renderPlot({
+      output$plotMainFull4 <- renderPlot({
+        Build_PlotMain(input$legendFull4,input$legendlocalFull4,ranges$x,ranges$y, fullextent = T)
+      })
+
+      #PPFD plots
+      buildplot3 <- function(xrange, yrange, legend, legendlocal, fullextent = F){
         if(is.null(vals$tCont)){
           plot.new()
           title('no data')
@@ -1379,9 +1471,11 @@ HIC.App.manual.StepByStep <- function(){
           Statelevels <- levels(as.factor(levels(State)))
           nState <- length(Statelevels)
 
-          # get the range for the x and y axis
-          xrange <- ranges$x
-          yrange <- ranges$y3
+          # get the range for the x and y axis if full extent
+          if(fullextent){
+            xrange <- range(vals$tCont, na.rm = T, finite = T)
+            yrange <- range( vals$valContL, na.rm = T, finite = T)
+          }
 
           # set up the plot
           #setup x-axis
@@ -1417,15 +1511,15 @@ HIC.App.manual.StepByStep <- function(){
           for (i in 2:nState){
             cols <- c(cols,Colors[Statelevels[i]])
           }
-          if((input$legend)){
-            legend((input$legendlocal),legend = Statelevels, cex=0.8, col=cols,
+          if((legend)){
+            legend((legendlocal),legend = Statelevels, cex=0.8, col=cols,
                    pch=16, title='State of value')
           }
 
         }
-      })
+      }
 
-      output$plot4 <- renderPlot({
+      buildplot4 <- function(xrange, yrange, legend, legendlocal, fullextent = F){
         if(is.null(vals$tCont)){
           plot.new()
           title('no data')
@@ -1445,8 +1539,10 @@ HIC.App.manual.StepByStep <- function(){
           nState <- length(Statelevels)
 
           # get the range for the x and y axis
-          xrange <- ranges$x
-          yrange <- ranges$y4
+          if(fullextent){
+            xrange <- range(vals$tCont, na.rm = T, finite = T)
+            yrange <- range( vals$valContU, na.rm = T, finite = T)
+          }
 
           # set up the plot
           #setup x-axis
@@ -1482,14 +1578,56 @@ HIC.App.manual.StepByStep <- function(){
           for (i in 2:nState){
             cols <- c(cols,Colors[Statelevels[i]])
           }
-          if((input$legend)){
-            legend((input$legendlocal),legend = Statelevels, cex=0.8, col=cols,
+          if((legend)){
+            legend((legendlocal),legend = Statelevels, cex=0.8, col=cols,
                    pch=16, title='State of value')
           }
 
         }
+      }
+
+      output$plot3 <- renderPlot({
+        buildplot3(ranges$x,ranges$y3,input$legend,input$legendlocal)
       })
 
+      output$plot4 <- renderPlot({
+        buildplot4(ranges$x,ranges$y4,input$legend,input$legendlocal)
+      })
+
+      output$plot3Full <- renderPlot({
+        buildplot3(ranges$x,ranges$y3,input$legendFull,input$legendlocalFull, fullextent = T)
+      })
+
+      output$plot4Full <- renderPlot({
+        buildplot4(ranges$x,ranges$y4,input$legendFull,input$legendlocalFull, fullextent = T)
+      })
+
+      output$plot3Full2 <- renderPlot({
+        buildplot3(rangesFull2$x,rangesFull2$y3,input$legendFull2,input$legendlocalFull2)
+      })
+
+      output$plot4Full2 <- renderPlot({
+        buildplot4(rangesFull2$x,rangesFull2$y4,input$legendFull2,input$legendlocalFull2)
+      })
+
+      output$plot3Full4 <- renderPlot({
+        buildplot3(ranges$x,ranges$y3,input$legendFull4,input$legendlocalFull4, fullextent = T)
+      })
+
+      output$plot4Full4 <- renderPlot({
+        buildplot4(ranges$x,ranges$y4,input$legendFull4,input$legendlocalFull4, fullextent = T)
+      })
+
+      output$plot3Full3 <- renderPlot({
+        buildplot3(ranges$x,ranges$y3,input$legendFull3,input$legendlocalFull3, fullextent = T)
+      })
+
+      output$plot4Full3 <- renderPlot({
+        buildplot4(ranges$x,ranges$y4,input$legendFull3,input$legendlocalFull3, fullextent = T)
+      })
+
+
+      ##zooming-----------
       # When a double-click happens, check if there's a brush on the plot.
       # If so, zoom to the brush bounds; if not, reset the zoom.
       observeEvent(input$plot_dblclick, {
@@ -1536,6 +1674,51 @@ HIC.App.manual.StepByStep <- function(){
       })
 
 
+      #Full2
+      # When a double-click happens, check if there's a brush on the plot.
+      # If so, zoom to the brush bounds; if not, reset the zoom.
+      observeEvent(input$plot_dblclickFull2, {
+        brush <- input$plot_brushFull2
+        if (!is.null(brush)) {
+          if(!input$lockxaxisFull2){rangesFull2$x <- c(brush$xmin, brush$xmax)}
+          if(!input$lockyaxisFull2){rangesFull2$y <- c(brush$ymin, brush$ymax)}
+
+        } else {
+          if(!input$lockxaxisFull2){rangesFull2$x <- range(vals$tCont, na.rm = T, finite = T)}
+          if(!input$lockyaxisFull2){rangesFull2$y <- range( vals$valCont, na.rm = T, finite = T)}
+        }
+      })
+
+      observeEvent(input$plot3_dblclickFull2, {
+        brush <- input$plot3_brushFull2
+        if (!is.null(brush)) {
+          if(!input$lockxaxisFull2){rangesFull2$x <- c(brush$xmin, brush$xmax)}
+          if(!input$lockyaxisFull2){rangesFull2$y3 <- c(brush$ymin, brush$ymax)}
+
+        } else {
+          if(!input$lockxaxisFull2){rangesFull2$x <- range(vals$tCont, na.rm = T, finite = T)}
+          if(!input$lockyaxisFull2){rangesFull2$y3 <- range( vals$valContL, na.rm = T, finite = T)}
+        }
+      })
+
+      observeEvent(input$plot4_dblclickFull2, {
+        brush <- input$plot4_brushFull2
+        if (!is.null(brush)) {
+          if(!input$lockxaxisFull2){rangesFull2$x <- c(brush$xmin, brush$xmax)}
+          if(!input$lockyaxisFull2){rangesFull2$y4 <- c(brush$ymin, brush$ymax)}
+
+        } else {
+          if(!input$lockxaxisFull2){rangesFull2$x <- range(vals$tCont, na.rm = T, finite = T)}
+          if(!input$lockyaxisFull2){rangesFull2$y4 <- range( vals$valContU, na.rm = T, finite = T)}
+        }
+      })
+
+      observeEvent(input$zoomout_toggleFull2,{
+        if(!input$lockxaxisFull2){rangesFull2$x <- c(rangesFull2$x[1]-abs(rangesFull2$x[2]-rangesFull2$x[1]), rangesFull2$x[2]+abs(rangesFull2$x[2]-rangesFull2$x[1]))}
+        if(!input$lockyaxisFull2){rangesFull2$y <- c(rangesFull2$y[1]-abs(rangesFull2$y[2]-rangesFull2$y[1]), rangesFull2$y[2]+abs(rangesFull2$y[2]-rangesFull2$y[1]))}
+        if(!input$lockyaxisFull2){rangesFull2$y3 <- c(rangesFull2$y3[1]-abs(rangesFull2$y3[2]-rangesFull2$y3[1]), rangesFull2$y3[2]+abs(rangesFull2$y3[2]-rangesFull2$y3[1]))}
+        if(!input$lockyaxisFull2){rangesFull2$y4 <- c(rangesFull2$y4[1]-abs(rangesFull2$y4[2]-rangesFull2$y4[1]), rangesFull2$y4[2]+abs(rangesFull2$y4[2]-rangesFull2$y4[1]))}
+      })
 
       #make plot correlation graph--------------
 
@@ -1563,7 +1746,7 @@ HIC.App.manual.StepByStep <- function(){
       }
 
 
-      makeCorPlot <- function(xrange,yrange,legend2,legendlocal2,fullextent = F){
+      makeCorPlot <- function(xrange,yrange,legend2,legendlocal2,g0=F,fullextent = F){
         tryCatch({
           #setting State of values
           State <- State(cortab()$state)
@@ -1591,9 +1774,11 @@ HIC.App.manual.StepByStep <- function(){
 
           # add lines
           #add thin gray line for the correlation equation
-          if(input$cal.nonsus_check==F){ #calibrate with y intercept
-            eqn <- lm_eqn(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)
-          }else{eqn <- lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)}
+          if(g0){goodtabloc<-goodtab0()}else{goodtabloc=goodtab()}
+          includeYintercept <- (input$cal.nonsus_check==F & !g0) | (g0 & vals$parCont!='Chfyla')
+          if(includeYintercept){ #calibrate with y intercept if not chlorophyll
+            eqn <- lm_eqn(y=goodtabloc$goodvalPeri, x=goodtabloc$goodvalCont)
+          }else{eqn <- lm_eqn.NoInt(y=goodtabloc$goodvalPeri, x=goodtabloc$goodvalCont)}
           abline(a = eqn$a, b = eqn$b, lwd=0.5, col='gray')
 
           #add corelation dataset with state of values
@@ -1611,8 +1796,8 @@ HIC.App.manual.StepByStep <- function(){
           # add a title and subtitle
           title(main = paste(vals$parCont,valsPeri$StNamPeri[1],"vs",vals$StNoCont),
                 sub = tryCatch({paste('Regression line for',ifelse(input$calgroup==0,'non-marked data points',paste('marked group',input$calgroup)),':',
-                                      ifelse(input$cal.nonsus_check,lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn,
-                                             lm_eqn(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn))},
+                                      ifelse(!includeYintercept,lm_eqn.NoInt(y=goodtabloc$goodvalPeri, x=goodtabloc$goodvalCont)$eqn,
+                                             lm_eqn(y=goodtabloc$goodvalPeri, x=goodtabloc$goodvalCont)$eqn))},
                          error=function(e){return("")})
           )
 
@@ -1636,7 +1821,7 @@ HIC.App.manual.StepByStep <- function(){
       output$plot2 <- renderPlot({makeCorPlot(ranges2$x,ranges2$y,input$legend2,input$legendlocal2)})
 
 
-      output$plotCorFull <- renderPlot({makeCorPlot(ranges2$x,ranges2$y,input$legend2Full,input$legendlocal2Full,fullextent = T)})
+      output$plotCorFull <- renderPlot({makeCorPlot(ranges2$x,ranges2$y,input$legend2Full,input$legendlocal2Full,g0 = T,fullextent = T)})
 
       # When a double-click happens, check if there's a brush on the plot.
       # If so, zoom to the brush bounds; if not, reset the zoom.
@@ -1662,11 +1847,11 @@ HIC.App.manual.StepByStep <- function(){
                  error=function(e){return("No reference data to calculate calibration formulas")})
       })
       output$formula_chla <- renderText({
-        tryCatch({lm_eqn(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn},
+        tryCatch({lm_eqn(y=goodtab0()$goodvalPeri, x=goodtab0()$goodvalCont)$eqn},
                  error=function(e){return("No reference data to calculate calibration formulas")})
       })
       output$formulaNoInt_chla <- renderText({
-        tryCatch({lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$eqn},
+        tryCatch({lm_eqn.NoInt(y=goodtab0()$goodvalPeri, x=goodtab0()$goodvalCont)$eqn},
                  error=function(e){return("No reference data to calculate calibration formulas")})
       })
 
@@ -1710,8 +1895,8 @@ HIC.App.manual.StepByStep <- function(){
             showNotification("Could not calculate a linear regression. Please use the manuall calibration. Or check that you have the correct marked-group selected.", type = 'error')
           }else{
             val <- sapply(val,f)
-            isolate(work$log <- rbind(work$log,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,ifelse(grp==0,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)",'')))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
-            isolate(work$trans <- rbind(work$trans,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,ifelse(grp==0,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)",'')))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$log <- rbind(work$log,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,ifelse(grp==0,". (Group 0 stands for all data not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)",'')))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$trans <- rbind(work$trans,paste("Calibrate all data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,ifelse(grp==0,". (Group 0 stands for all data not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)",'')))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
           }
 
           vals$valCont[cond] <- val
@@ -1735,8 +1920,8 @@ HIC.App.manual.StepByStep <- function(){
           a<-NULL;b<-NULL
           try(silent = T,
                #calibrate with no y intercept
-                {a<-as.numeric(lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$a)
-                b<-as.numeric(lm_eqn.NoInt(y=goodtab()$goodvalPeri, x=goodtab()$goodvalCont)$b)}
+                {a<-as.numeric(lm_eqn.NoInt(y=goodtab0()$goodvalPeri, x=goodtab0()$goodvalCont)$a)
+                b<-as.numeric(lm_eqn.NoInt(y=goodtab0()$goodvalPeri, x=goodtab0()$goodvalCont)$b)}
 
           )
 
@@ -1751,8 +1936,8 @@ HIC.App.manual.StepByStep <- function(){
             showNotification("Could not calculate a linear regression. Please use the manuall calibration. Or check that you have the correct marked-group selected.", type = 'error')
           }else{
             val <- sapply(val,f)
-            isolate(work$log <- rbind(work$log,paste("Calibrate all chlorophyll data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
-            isolate(work$trans <- rbind(work$trans,paste("Calibrate all chlorophyll data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 means all not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$log <- rbind(work$log,paste("Calibrate all chlorophyll data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 stands for all data not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
+            isolate(work$trans <- rbind(work$trans,paste("Calibrate all chlorophyll data in 'Marked Grouping'",grp," with",a,"+",b,"* x","at",time$time,". (Group 0 stands for all data not inside a marked grouping. Suspect values were not used for calculating the calibration but they were calibrated.)"))) #adds a row to the log table of what was done. Needs to be in isolate() so that it wont make the reactive function reevaluate for ever
           }
 
           vals$valCont[cond] <- val

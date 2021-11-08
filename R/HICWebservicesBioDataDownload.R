@@ -15,7 +15,7 @@
 #'
 #' @return A folder with all the downloaded time series as csv files
 #' and two additional csv files (DownloadSummaryBinary.csv and
-#' DownloadSummaryID.csv) that give the summary of which files were downloaded.
+#' DownloadSummaryID.csv) that give the summary of which files were downloaded and site coordinates in Belgian Lambert 72.
 #' The metadata columns DateTimeUnix, Parameter.Name, Station.Name, Station.Number,
 #' Parameter.Unit are added to the downloaded table.
 #' @export
@@ -108,7 +108,7 @@ HICwebservicesBioDownload <- function(year, credentials = NULL,other.group.ids =
 #' Function for downloading all continuous abiological
 #' data from the HIC server from a given year
 #'
-#' Downloads all the HIC data for Q(daily average), Turb,
+#' Downloads all the HIC data for Q(daily average), Turb, conductivity,
 #' and temp for a given year. Additional
 #' time series groups can also be added to the download list.
 #' The package HICwebservices is required.
@@ -144,17 +144,10 @@ HICwebservicesAbioDownload <- function(year, credentials = NULL,other.group.ids 
   )
 
   #download time series----------
-  #Chfyla,DO,pH
-  ts_id_bio <- c(156172,156207,156197)
-  group_list <- get_group_list_info(ts_id_bio[1])
-  grouplists <- group_list
-  for(i in ts_id_bio[-1]){
-    group_list <- get_group_list_info(i)
-    grouplists <- rbind(grouplists, group_list)
 
-  }
-  #Q,Turb,temp
-  ts_id_abio = c(156169,156202,156200)
+  #Q,Turb,temp,cond
+  grouplists <- get_group_list_info(156169)
+  ts_id_abio <- c(156202,156200,156173)
   for(i in ts_id_abio){
     group_list <- get_group_list_info(i)
     grouplists <- rbind(grouplists, group_list)

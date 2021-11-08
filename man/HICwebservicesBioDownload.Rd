@@ -24,7 +24,7 @@ HICwebservicesBioDownload(
 \value{
 A folder with all the downloaded time series as csv files
 and two additional csv files (DownloadSummaryBinary.csv and
-DownloadSummaryID.csv) that give the summary of which files were downloaded.
+DownloadSummaryID.csv) that give the summary of which files were downloaded and site coordinates in Belgian Lambert 72.
 The metadata columns DateTimeUnix, Parameter.Name, Station.Name, Station.Number,
 Parameter.Unit are added to the downloaded table.
 }

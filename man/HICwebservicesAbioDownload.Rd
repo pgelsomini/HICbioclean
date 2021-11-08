@@ -29,7 +29,7 @@ The metadata columns DateTimeUnix, Parameter.Name, Station.Name, Station.Number,
 Parameter.Unit are added to the downloaded table.
 }
 \description{
-Downloads all the HIC data for Q(daily average), Turb,
+Downloads all the HIC data for Q(daily average), Turb, conductivity,
 and temp for a given year. Additional
 time series groups can also be added to the download list.
 The package HICwebservices is required.

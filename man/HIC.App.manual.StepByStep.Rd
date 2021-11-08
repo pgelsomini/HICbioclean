@@ -15,8 +15,6 @@ These graphical apps will walk you through the entire work flow of data import, 
 This is the only method of manual validation and calibration and final export.
 }
 \details{
-Either enter "format" to format HIC database data, "auto" to auto-validate formatted data, or "manual" to manually check and calibrate auto-validated data against reference site locations (if available) and export final zrx files for upload back into the HIC database.
-
 The formatting step and the auto validation step can be done in R code using the functions HIC.Continuous.Data.Import.Format(), spk.DespikingWorkflow.CSVfileBatchProcess(), and HIC.PPFDAutoValidation.CSVfileBatchProcess().
 The manual validation, calibration and final export must be done using this graphical app.
 
@@ -25,7 +23,7 @@ First: format the csv files that are exported from the HIC database - HIC.App.fo
 
 Second: auto-validate the formatted files - HIC.App.auto()
 
-Third: manual-validate/calibrate the files and export the data - HIC.App.manual()
+Third: manual-validate/calibrate the files and export the data - HIC.App.manual.StepByStep()
 
 Files can be batch processed at each step so there is no need to run through all the steps for each individual file.
 
@@ -35,5 +33,5 @@ Files can be batch processed at each step so there is no need to run through all
 \examples{
 HIC.App.format() # to format the HIC database output csv files
 HIC.App.auto() # to auto-validate the formatted data
-HIC.App.manual() # to manually check the auto-validated data
+HIC.App.manual.StepByStep() # to manually check the auto-validated data
 }

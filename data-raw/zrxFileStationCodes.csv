@@ -36,6 +36,7 @@ zes39c-SF-CM;PPFD;1114zes39c-SF-CMPPFDVAL;µmol/s/m²
 zes39c-SF-CM;PPFD1;1114zes39c-SF-CMPPFD1VAL;µmol/s/m²
 zes39c-SF-CM;kd;1114zes39c-SF-CMkdVAL;m¯¹
 zes40a-SF-CM;DO;1114zes40a-SF-CMDOVAL;mg/l
+zes40a-SF-CM;pH;1114zes40a-SF-CMpHVAL;-
 zes54m-SF-CM;Chfyla;1114zes54m-SF-CMChfylaVAL;µg/l
 zes54m-SF-CM;DO;1114zes54m-SF-CMDOVAL;mg/l
 zes54m-SF-CM;pH;1114zes54m-SF-CMpHVAL;-
@@ -44,3 +45,5 @@ zes54m-SF-CM;PPFD1;1114zes54m-SF-CMPPFD1VAL;µmol/s/m²
 zes54m-SF-CM;kd;1114zes54m-SF-CMkdVAL;m¯¹
 zes57a-SF-CM;DO;1114zes57a-SF-CMDOVAL;mg/l
 zes57a-SF-CM;pH;1114zes57a-SF-CMpHVAL;-
+zes57n-SF-CM;DO;1114zes57n-SF-CMDOVAL;mg/l
+zes57n-SF-CM;pH;1114zes57n-SF-CMpHVAL;-
