@@ -641,7 +641,7 @@ HIC.App.manual.StepByStep <- function(){
       observe({vals$valContL <- df()[["dspk.Values.y"]]})
       observe({vals$valContU <- df()[["dspk.Values.x"]]})
 
-      #Make data table headsor displaying under file upload
+      #Make data table header displaying under file upload
       output$ContDataHead <- renderTable({
         Contfile <- input$Contfile
         isolate(work$log <- NULL)

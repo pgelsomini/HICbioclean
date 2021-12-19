@@ -269,6 +269,13 @@ dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data 
 #' If a “sampling.interval” is not provided then it will be calculated as the mode of
 #' the interval between samples.
 #'
+#' Spikes must be greater than 4 times the precision of the data, for example if there
+#' is one decimal place then the spike must be at least 0.4 greater than the median/mean
+#' of the surrounding data. This is a bug fix for when there is very little change in the
+#' values and most of the values are exactly the same, then any change what so ever
+#' will be taken as a spike (e.g. 4,4,4,5,4,4,4 the 5 in this list would be taken as a
+#' spike otherwise).
+#'
 #' To keep track of what vales were evaluated and removed the output "dspk.StateOfValue" is generated.
 #' The state of value of the deleted values will be set to “state.of.value.code” (default 92). The
 #' state of value of the values that passed the despike test will be set to
@@ -287,6 +294,7 @@ dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data 
 #' @param default.state.of.value.code Number that unchecked values are marked with if no State.of.value.data was provided.
 #' @param NAvalue Value that is read as NA
 #' @param threshold Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.
+#' @param precision The number of decimals in your dataset. Will be calculated if left as NULL.
 #' @param Method Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.
 #' @param logoutput TRUE if you want to have a logged record of what the function did
 #'
@@ -322,7 +330,7 @@ dspk.MinMaxfilter <- function(Data = NULL, Value, Min, Max, State.of.value.data 
 #' #Running the despiking using the threshold of 5 standard deviations from the mean.
 #' dspk.Spikefilter(Value = SomeValues, Method = "mean", threshold = 5)
 #'
-dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.interval = NULL, State.of.value.data = NULL, state.of.value.code = 92, good.state.of.value.code = 80, default.state.of.value.code = 110,  NAvalue = NULL, threshold = 3, Method = "median",logoutput = F){
+dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.interval = NULL, State.of.value.data = NULL, state.of.value.code = 92, good.state.of.value.code = 80, default.state.of.value.code = 110,  NAvalue = NULL, threshold = 3, precision = NULL, Method = "median",logoutput = F){
   #message("Spike removal")
   if(!(is.numeric(good.state.of.value.code)&length(good.state.of.value.code)==1)) stop('State of value codes must be a number')
   if(!(is.numeric(state.of.value.code)&length(state.of.value.code)==1)) stop('State of value codes must be a number')
@@ -353,6 +361,22 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
   #make the activity log element
   logdata <- NULL
 
+  #getting decimal precision
+  if(is.null(precision)){ #if no precision was provided
+    havedecimals <- grepl('.',format(dspk.Values,scientific = F),fixed = T)
+    if(any(havedecimals)){#do any of the values have decimal points?
+      ndecimals <- function(x){tryCatch({nchar(strsplit(format(x,scientific = F), ".", fixed = TRUE)[[1]][[2]])},error=function(e){return(0)})}
+
+      precision<-eval(parse(text = paste0('1e-', max(unlist( lapply(dspk.Values[havedecimals],ndecimals) )) )))
+    }else{
+      precision<-1 #round to no decimal places
+    }
+    message(paste('No data precision provided for determining minimum spike size. Data precision taken to be',precision,'and minimum spike size will be four times this value.'))
+    logdata <- rbind(logdata,paste('No data precision provided for determining minimum spike size. Data precision taken to be',precision,'and minimum spike size will be four times this value.'))
+  }
+  #setting the minimum spike size
+  minimumSpike <- precision*4
+
   #calculating sampling interval if sampling interval is NULL
   if(is.null(sampling.interval)){
     a <- na.omit(DateTimeNum[-1]-DateTimeNum[-length(DateTimeNum)]) #subtract times from eachother shifted by one
@@ -367,6 +391,7 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
 
   n<-length(dspk.Values) #number data points in the vector
 
+  #despiking the first 5 data points
   for (i in (1:5)) {
     if (condition[i]) {
       t<-DateTimeNum[i] #time that the sample was taken
@@ -392,11 +417,12 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
 
       if (length(v)>4){
         x <- dspk.Values[i] #value of this sample site
-        spike <- ifelse(Method == "median",abs(median(v)-x)>threshold*mad(v, na.rm = T),abs(mean(v)-x)>threshold*sd(v, na.rm = T))
+        spike <- ifelse(Method == "median",abs(median(v)-x)>max(threshold*mad(v, na.rm = T),minimumSpike),abs(mean(v)-x)>max(threshold*sd(v, na.rm = T),minimumSpike))
         dspk.StateOfValue[i] <- ifelse(spike,state.of.value.code,good.state.of.value.code) #if statment to determine if it is a spike
       }
     }
   }
+  #despiking the rest of the data
   for (i in (6:n)[condition[-c(1:5)]]) {
 
     t<-DateTimeNum[i] #time that the sample was taken
@@ -419,7 +445,7 @@ dspk.Spikefilter = function(Data = NULL, Value, NumDateTime=NULL, sampling.inter
 
     if (length(v)>4){
       x <- dspk.Values[i] #value of this sample site
-      spike <- ifelse(Method == "median",abs(median(v)-x)>threshold*mad(v, na.rm = T),abs(mean(v)-x)>threshold*sd(v, na.rm = T))
+      spike <- ifelse(Method == "median",abs(median(v)-x)>max(threshold*mad(v, na.rm = T),minimumSpike),abs(mean(v)-x)>max(threshold*sd(v, na.rm = T),minimumSpike))
       dspk.StateOfValue[i] <- ifelse(spike,state.of.value.code,good.state.of.value.code) #if statment to determine if it is a spike
     }
   }
@@ -897,8 +923,8 @@ dspk.BatchProcess <- function(directory, output.directory, file.name.note = '', 
 #'    #conditional min max filter based on parameter with minimum reasonable value
 #'    #for oxygen, pH, chlorophyll a, and PPFD being 0 and the maximum
 #'    #reasonable value for oxygen and pH being 15 and chlorophyll 1000 and PPFD being 2000
-#'    max.gap = 3600)
-#'    #The maximum data gap that should be interpolated is one hour or 3600 seconds.
+#'    max.gap = 900)
+#'    #The maximum data gap that should be interpolated is 15 minutes or 900 seconds.
 #'
 #' #Example: Running full despiking work flow with batch process from a folder of
 #' #csv files, with default despiking algorithm (threshold of 3 MAD from the median)
@@ -1304,7 +1330,7 @@ dspk.DespikingWorkflow.CSVfileBatchProcess <- function(steps = c(1,2,3),input.di
         }else{sampling.interval2<-sampling.interval}
 
         #--run the batched process and save it to a new table--
-        New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
+        New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision = precision, Method = despike.Method,logoutput = T)
         logdata <- rbind(logdata,t(t(unlist(New.table$logdata))))
         New.table <- as.data.frame(New.table$data)
         #!!!!!!!!!This is a work around for not adding all the data from the before function

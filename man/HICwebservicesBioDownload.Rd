@@ -29,7 +29,7 @@ The metadata columns DateTimeUnix, Parameter.Name, Station.Name, Station.Number,
 Parameter.Unit are added to the downloaded table.
 }
 \description{
-Downloads all the HIC data for Chfyla, DO, pH and PPFD for a given year. Additional
+Downloads all the HIC data for Chfyla, DO, pH and PPFD for a given year from group id 446639. Additional
 time series groups can also be added to the download list.
 The package HICwebservices is required.
 }

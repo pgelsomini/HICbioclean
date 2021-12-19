@@ -294,8 +294,8 @@ dspk.DespikingWorkflow.CSVfileBatchProcess(
    #conditional min max filter based on parameter with minimum reasonable value
    #for oxygen, pH, chlorophyll a, and PPFD being 0 and the maximum
    #reasonable value for oxygen and pH being 15 and chlorophyll 1000 and PPFD being 2000
-   max.gap = 3600)
-   #The maximum data gap that should be interpolated is one hour or 3600 seconds.
+   max.gap = 900)
+   #The maximum data gap that should be interpolated is 15 minutes or 900 seconds.
 
 #Example: Running full despiking work flow with batch process from a folder of
 #csv files, with default despiking algorithm (threshold of 3 MAD from the median)

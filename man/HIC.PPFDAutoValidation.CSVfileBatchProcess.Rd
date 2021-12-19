@@ -245,7 +245,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess(
     input.directory = "C:/Rdata/PPFDdata",
     Value = "Value", val.NAvalue = -777, #all values of -777 will be set to NA
     DateTime = "DateTimeUnix",
-    max.gap = 3600) #3600 seconds or 1 hour maximum gap to interpolate
+    max.gap = 900) #900 seconds or 15 minutes maximum gap to interpolate
 
 #Process the r object tables PPFDuppersensor and PPFDlowersensor on the column "Value".
 HIC.PPFDAutoValidation.CSVfileBatchProcess(DataUpper = PPFDuppersensor,

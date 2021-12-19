@@ -4,7 +4,7 @@
 #' Function for downloading all continuous biological
 #' data from the HIC server from a given year
 #'
-#' Downloads all the HIC data for Chfyla, DO, pH and PPFD for a given year. Additional
+#' Downloads all the HIC data for Chfyla, DO, pH and PPFD for a given year from group id 446639. Additional
 #' time series groups can also be added to the download list.
 #' The package HICwebservices is required.
 #'

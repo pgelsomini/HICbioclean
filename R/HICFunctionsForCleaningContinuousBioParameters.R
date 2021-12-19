@@ -350,7 +350,7 @@ HIC.Continuous.Data.Import.Format = function(InputDirectory,OutputDirectory, Dat
 #'     input.directory = "C:/Rdata/PPFDdata",
 #'     Value = "Value", val.NAvalue = -777, #all values of -777 will be set to NA
 #'     DateTime = "DateTimeUnix",
-#'     max.gap = 3600) #3600 seconds or 1 hour maximum gap to interpolate
+#'     max.gap = 900) #900 seconds or 15 minutes maximum gap to interpolate
 #'
 #' #Process the r object tables PPFDuppersensor and PPFDlowersensor on the column "Value".
 #' HIC.PPFDAutoValidation.CSVfileBatchProcess(DataUpper = PPFDuppersensor,
@@ -603,10 +603,10 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
       message('despiking')
       logdata <- rbind(logdata,'')
       logdata <- rbind(logdata,'Despike PPFD')
-      SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
+      SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision =precision, Method = despike.Method,logoutput = T)
       logdata <- rbind(logdata,t(t(unlist(SFT1$logdata))))
       SFT1 <- as.data.frame(SFT1$data)
-      SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
+      SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision =precision, Method = despike.Method,logoutput = T)
       logdata <- rbind(logdata,t(t(unlist(SFT2$logdata))))
       logdata <- rbind(logdata,'')
       SFT2 <- as.data.frame(SFT2$data)
@@ -701,7 +701,7 @@ HIC.PPFDAutoValidation.CSVfileBatchProcess = function(
       logdata <- rbind(logdata,'')
       logdata <- rbind(logdata,'despike kd and remove PPFD values where kd spikes')
       message('despiking kd and remove PPFD values where kd spikes')
-      kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method, logoutput = T)
+      kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision =precision, Method = despike.Method, logoutput = T)
       logdata <- rbind(logdata,t(t(unlist(kddspk$logdata))))
       kddspk <- as.data.frame(kddspk$data)
       con <- kddspk$dspk.StateOfValue == kdDespiked.state.of.value.code #spike in kd

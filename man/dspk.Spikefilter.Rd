@@ -15,6 +15,7 @@ dspk.Spikefilter(
   default.state.of.value.code = 110,
   NAvalue = NULL,
   threshold = 3,
+  precision = NULL,
   Method = "median",
   logoutput = F
 )
@@ -40,6 +41,8 @@ dspk.Spikefilter(
 
 \item{threshold}{Number indicating the threshold for defining a spike. By default it is 3, which corresponds to 3 median absolute deviations or 3 standard deviations.}
 
+\item{precision}{The number of decimals in your dataset. Will be calculated if left as NULL.}
+
 \item{Method}{Character string "median" or “mean” indicating the method to use for the despiking. By default “median”.}
 
 \item{logoutput}{TRUE if you want to have a logged record of what the function did}
@@ -61,6 +64,13 @@ is required for the sample to be evaluated. The algorithm will not look farther
 than 5 sampling intervals before and after the data point, for handling data gaps.
 If a “sampling.interval” is not provided then it will be calculated as the mode of
 the interval between samples.
+
+Spikes must be greater than 4 times the precision of the data, for example if there
+is one decimal place then the spike must be at least 0.4 greater than the median/mean
+of the surrounding data. This is a bug fix for when there is very little change in the
+values and most of the values are exactly the same, then any change what so ever
+will be taken as a spike (e.g. 4,4,4,5,4,4,4 the 5 in this list would be taken as a
+spike otherwise).
 
 To keep track of what vales were evaluated and removed the output "dspk.StateOfValue" is generated.
 The state of value of the deleted values will be set to “state.of.value.code” (default 92). The

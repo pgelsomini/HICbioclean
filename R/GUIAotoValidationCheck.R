@@ -147,7 +147,7 @@ HIC.App.auto <- function(){
                                                                    fluidRow(column(12,HTML('<strong>A custom precision may be entered as follows.</strong> examples: 0.566 would be ‘precision = 0.001’ 1200 would be ‘precision = 100’ Measurements with steps of 5 would be ‘precision = 5’ Measurements to the nearest half unit would be ‘precision = 0.5’'))),
                                                                    numericInput("precision.dspk",NULL,NULL),
                                                                    fluidRow(column(12,HTML('<strong>Max gap to linear interpolate</strong> Make sure to enter the gap width in the same time unit as your datetime. If the original data was character, then it has been converted to UNIX seconds. If no datetime was provided, then the unit is in samples.'))),
-                                                                   numericInput("max.gap.dspk",NULL,3600),'default 3600 seconds = 1 hour'
+                                                                   numericInput("max.gap.dspk",NULL,900),'default 900 seconds = 15 minutes'
 
                                                   ),
                                                   conditionalPanel(condition = "input.PPFDdespikedspk",
@@ -1117,7 +1117,7 @@ HIC.App.auto <- function(){
           #below is a copy of the function HIC.PPFDAutoValidation.CSVfileBatchProcess()
 
           #function to identify type of input and covert to text conserving quotes and vectors
-          #It is importaint that you know exactly what was entered into the function arguments
+          #It is important that you know exactly what was entered into the function arguments
           itqv <- function(x){
             fff<-function(x){
               if(is.null(x)){return("NULL")}
@@ -1339,10 +1339,10 @@ HIC.App.auto <- function(){
                 message('despiking')
                 logdata <- rbind(logdata,'')
                 logdata <- rbind(logdata,'Despike PPFD')
-                SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
+                SFT1 = dspk.Spikefilter(Value =  MMT1$dspk.Values, NumDateTime = FT1$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT1$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision = precision, Method = despike.Method,logoutput = T)
                 logdata <- rbind(logdata,t(t(unlist(SFT1$logdata))))
                 SFT1 <- as.data.frame(SFT1$data)
-                SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
+                SFT2 = dspk.Spikefilter(Value =  MMT2$dspk.Values, NumDateTime = FT2$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MMT2$dspk.StateOfValue, state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision = precision, Method = despike.Method,logoutput = T)
                 logdata <- rbind(logdata,t(t(unlist(SFT2$logdata))))
                 logdata <- rbind(logdata,'')
                 SFT2 <- as.data.frame(SFT2$data)
@@ -1439,7 +1439,7 @@ HIC.App.auto <- function(){
                 logdata <- rbind(logdata,'')
                 logdata <- rbind(logdata,'despike kd and remove PPFD values where kd spikes')
                 message('despiking kd and remove PPFD values where kd spikes')
-                kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method, logoutput = T)
+                kddspk <- dspk.Spikefilter(Value =  MergeT$dspk.kd, NumDateTime = MergeT$dspk.DateTimeNum, sampling.interval = sampling.interval, State.of.value.data = MergeT$dspk.StateOfValue.x, state.of.value.code = kdDespiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision = precision, Method = despike.Method, logoutput = T)
                 logdata <- rbind(logdata,t(t(unlist(kddspk$logdata))))
                 kddspk <- as.data.frame(kddspk$data)
                 con <- kddspk$dspk.StateOfValue == kdDespiked.state.of.value.code #spike in kd
@@ -1808,7 +1808,7 @@ HIC.App.auto <- function(){
                   }else{sampling.interval2<-sampling.interval}
 
                   #--run the batched process and save it to a new table--
-                  New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, Method = despike.Method,logoutput = T)
+                  New.table <- dspk.Spikefilter(Data = CSV.table, Value = "dspk.Values", NumDateTime = "dspk.DateTimeNum", sampling.interval = sampling.interval2, State.of.value.data = "dspk.StateOfValue", state.of.value.code = despiked.state.of.value.code, good.state.of.value.code = good.state.of.value.code, NAvalue = NULL, threshold = despike.threshold, precision = precision,  Method = despike.Method,logoutput = T)
                   logdata <- rbind(logdata,t(t(unlist(New.table$logdata))))
                   New.table <- as.data.frame(New.table$data)
                   #!!!!!!!!!This is a work around for not adding all the data from the before function
